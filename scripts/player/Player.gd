@@ -4,7 +4,7 @@ class_name Player
 extends CharacterBody2D
 
 # ─── REFERENCES ───────────────────────────────────────────
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: Polygon2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
 @onready var weapon_container: Node2D = $Weapons
 @onready var pickup_area: Area2D = $PickupArea
@@ -24,10 +24,15 @@ var _flash_tween: Tween
 
 
 func _ready() -> void:
+	add_to_group("player")
 	stats = PlayerStats.new()
 	stats.apply_meta_upgrades()
 	current_health = stats.max_health
+	# Connect invincibility timer properly
+	invincibility_timer.timeout.connect(_on_invincibility_timer_timeout)
 	_setup_pickup_area()
+	# Add starting weapon
+	add_weapon(load("res://scripts/player/weapons/NucleusPulse.gd"))
 	GameManager.start_run()
 
 
@@ -38,7 +43,7 @@ func _physics_process(delta: float) -> void:
 	_process_regen(delta)
 
 
-func _process_movement(delta: float) -> void:
+func _process_movement(_delta: float) -> void:
 	var input_vec := Vector2.ZERO
 
 	# Mobile joystick (set externally by VirtualJoystick)
@@ -101,7 +106,7 @@ func _die() -> void:
 	EventBus.player_died.emit()
 	# Death animation
 	var tween := create_tween()
-	tween.tween_property(sprite, "modulate:a", 0.0, 0.5)
+	tween.tween_property(sprite, "color", Color(0, 0, 0, 0), 0.5)
 	await tween.finished
 	queue_free()
 
@@ -110,9 +115,9 @@ func _die() -> void:
 func _flash_hit() -> void:
 	if _flash_tween:
 		_flash_tween.kill()
-	sprite.modulate = Color(1.5, 0.3, 0.3)
+	sprite.color = Color(1.5, 0.3, 0.3)
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(sprite, "modulate", Color.WHITE, 0.15)
+	_flash_tween.tween_property(sprite, "color", Color(0.2, 0.8, 1, 1), 0.15)
 
 
 func _start_invincibility() -> void:
@@ -120,7 +125,7 @@ func _start_invincibility() -> void:
 	invincibility_timer.start(0.6)
 
 
-func _on_InvincibilityTimer_timeout() -> void:
+func _on_invincibility_timer_timeout() -> void:
 	is_invincible = false
 
 
@@ -131,8 +136,14 @@ func _on_pickup_area_entered(area: Area2D) -> void:
 
 
 # ─── WEAPON API (called by UpgradeSystem) ─────────────────
-func add_weapon(weapon_scene: PackedScene) -> void:
-	var w := weapon_scene.instantiate()
+func add_weapon(weapon_or_script) -> void:
+	var w: Node
+	if weapon_or_script is PackedScene:
+		w = weapon_or_script.instantiate()
+	elif weapon_or_script is Script:
+		w = weapon_or_script.new()
+	else:
+		return
 	w.player = self
 	weapon_container.add_child(w)
 	weapons.append(w)

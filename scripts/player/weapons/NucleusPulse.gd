@@ -46,7 +46,7 @@ func _get_projectile_count() -> int:
 
 
 func _spawn_projectile(direction: Vector2) -> void:
-	var proj = _pool.get()
+	var proj = _pool.get_node()
 	if proj == null:
 		return
 	proj.global_position = player.global_position

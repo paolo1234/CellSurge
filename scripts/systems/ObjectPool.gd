@@ -19,11 +19,11 @@ func _init(scene: PackedScene, initial_size: int, parent: Node) -> void:
 		var inst := _scene.instantiate()
 		inst.process_mode = Node.PROCESS_MODE_DISABLED
 		inst.hide()
-		_parent.add_child(inst)
+		_parent.call_deferred("add_child", inst)
 		_pool.append(inst)
 
 
-func get() -> Node:
+func get_node() -> Node:
 	for node in _pool:
 		if not node.visible:
 			node.show()
@@ -31,12 +31,12 @@ func get() -> Node:
 			return node
 	# Pool exhausted — grow it
 	var inst := _scene.instantiate()
-	_parent.add_child(inst)
+	_parent.call_deferred("add_child", inst)
 	_pool.append(inst)
 	return inst
 
 
-func release(node: Node) -> void:
+func release_node(node: Node) -> void:
 	node.hide()
 	node.process_mode = Node.PROCESS_MODE_DISABLED
 	# Reset position to avoid stale positions

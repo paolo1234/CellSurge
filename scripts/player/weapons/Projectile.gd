@@ -58,13 +58,17 @@ func _on_body_entered(body: Node) -> void:
 
 func _return_to_pool() -> void:
 	if _pool:
-		_pool.release(self)
+		_pool.release_node(self)
 	else:
-		hide()
-		process_mode = Node.PROCESS_MODE_DISABLED
+		call_deferred("_disable_and_hide")
 
 
 func reset() -> void:
 	_hit_enemies.clear()
 	_elapsed = 0.0
 	_pierce_count = 0
+
+
+func _disable_and_hide() -> void:
+	hide()
+	process_mode = Node.PROCESS_MODE_DISABLED

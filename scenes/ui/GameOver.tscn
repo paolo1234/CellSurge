@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/GameOverScreen.gd" id="1_kp3qx"]
+
+[node name="root" type="CanvasLayer" unique_id=1563494382]
+script = ExtResource("1_kp3qx")

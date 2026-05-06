@@ -9,11 +9,11 @@ const WAVES := [
 	# [start_minute, wave_data]
 	[0,  {"types": ["batterio"], "count": 2, "interval": 2.0}],
 	[2,  {"types": ["batterio", "virus"], "count": 3, "interval": 1.8}],
-	[5,  {"types": ["batterio", "virus", "fungo"], "count": 4, "interval": 1.5}],
+	[4,  {"types": ["batterio", "virus", "fungo"], "count": 4, "interval": 1.5}],
 	[8,  {"types": ["batterio", "virus", "fungo"], "count": 6, "interval": 1.2}],
-	[10, {"types": ["batterio", "virus", "fungo", "parassita"], "count": 5, "interval": 1.0}],
-	[14, {"types": ["batterio", "virus", "fungo", "parassita", "spora"], "count": 7, "interval": 0.9}],
-	[17, {"types": ["batterio", "virus", "fungo", "parassita", "spora", "batteriofago"], "count": 8, "interval": 0.8}],
+	[10, {"types": ["batterio", "virus", "fungo"], "count": 5, "interval": 1.0}],
+	[14, {"types": ["batterio", "virus", "fungo"], "count": 7, "interval": 0.9}],
+	[17, {"types": ["batterio", "virus", "fungo"], "count": 8, "interval": 0.8}],
 ]
 
 var _last_applied_wave: int = -1

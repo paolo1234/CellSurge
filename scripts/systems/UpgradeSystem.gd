@@ -8,7 +8,7 @@ const UPGRADES := {
 	# STAT UPGRADES
 	"hp_up_1":      {"name": "Stronger Membrane",   "desc": "+20 Max HP",             "rarity": "common",  "max_stack": 3, "stat": "max_health",  "value": 20.0},
 	"hp_up_2":      {"name": "Reinforced Wall",      "desc": "+30 Max HP",             "rarity": "rare",    "max_stack": 2, "stat": "max_health",  "value": 30.0},
-	"speed_up":     {"name": "Cytoplasm Flow",       "desc": "+15% Move Speed",        "rarity": "common",  "max_stack": 3, "stat": "move_speed",  "value": 0.15, "is_percent": true},
+	"speed_up":     {"name": "Cytoplasm Flow",       "desc": "+15% Move Speed",        "rarity": "common",  "max_stack": 3, "stat": "move_speed",  "value": 30.0},
 	"damage_up":    {"name": "Enzyme Boost",         "desc": "+10% Damage",            "rarity": "common",  "max_stack": 5, "stat": "damage_mult", "value": 0.10, "is_percent": true},
 	"atk_speed_up": {"name": "Rapid Mitosis",        "desc": "+15% Attack Speed",      "rarity": "rare",    "max_stack": 3, "stat": "attack_speed_mult", "value": 0.15, "is_percent": true},
 	"area_up":      {"name": "Cell Expansion",       "desc": "+20% Weapon Area",       "rarity": "rare",    "max_stack": 3, "stat": "area_mult",   "value": 0.20, "is_percent": true},
@@ -42,21 +42,24 @@ func setup(player: CharacterBody2D) -> void:
 
 func get_choices(count: int = 3) -> Array[Dictionary]:
 	var available := _get_available_upgrades()
+	print("Available upgrades: ", available.size())
+	if available.is_empty():
+		return []
 	available.shuffle()
-	# Sort by weighted rarity
 	var weighted := _apply_luck_to_pool(available)
 	var choices: Array[Dictionary] = []
 	for up in weighted:
 		if choices.size() >= count:
 			break
 		choices.append(up)
+	print("Returning choices: ", choices.size())
 	return choices
 
 
 func apply_upgrade(upgrade_id: String) -> void:
 	if not UPGRADES.has(upgrade_id):
 		return
-	var data := UPGRADES[upgrade_id]
+	var data: Dictionary = UPGRADES[upgrade_id]
 	_stacks[upgrade_id] = _stacks.get(upgrade_id, 0) + 1
 
 	var utype: String = data.get("type", "stat")
@@ -65,11 +68,10 @@ func apply_upgrade(upgrade_id: String) -> void:
 			var stat: String = data.get("stat", "")
 			var value: float = float(data.get("value", 0))
 			var is_percent: bool = data.get("is_percent", false)
-			if stat in _player.stats and stat != "":
+			if stat != "" and stat in _player.stats:
 				if is_percent:
-					_player.stats[stat] += _player.stats[stat] * value if stat.ends_with("_mult") else value
-					# For multipliers, add flat bonus on top
-					_player.stats[stat] = _player.stats.get(stat, 1.0) + value if stat.ends_with("_mult") else _player.stats.get(stat, 0.0) + value
+					# Add the percentage value directly (e.g. +0.10 to damage_mult)
+					_player.stats[stat] += value
 				else:
 					_player.stats[stat] += value
 				# Special: max_health also restores HP
@@ -80,30 +82,29 @@ func apply_upgrade(upgrade_id: String) -> void:
 		"heal_percent":
 			_player.heal(_player.stats.max_health * float(data.get("value", 0)))
 
-	EventBus.upgrade_selected.emit(upgrade_id)
+	# Note: upgrade_selected is emitted by World._on_upgrade_selected which called this.
+	# Do NOT re-emit here to avoid infinite signal loop.
 
 
-func _get_available_upgrades() -> Array:
-	var result := []
+func _get_available_upgrades() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
 	for id in UPGRADES:
-		var data := UPGRADES[id]
-		var stack := _stacks.get(id, 0)
+		var data: Dictionary = UPGRADES[id]
+		var stack: int = _stacks.get(id, 0)
 		if stack < int(data.get("max_stack", 1)):
 			result.append({"id": id, "data": data})
 	return result
 
 
-func _apply_luck_to_pool(pool: Array) -> Array:
-	var luck := _player.stats.luck if _player else 0.0
+func _apply_luck_to_pool(pool: Array) -> Array[Dictionary]:
+	var luck_stat: float = _player.stats.luck if _player else 0.0
 	var common := pool.filter(func(u): return u["data"]["rarity"] == "common")
 	var rare := pool.filter(func(u): return u["data"]["rarity"] == "rare")
 	var epic := pool.filter(func(u): return u["data"]["rarity"] == "epic")
-	# Luck shifts weight toward rarer items
-	var total_weight := int(RARITY_WEIGHTS["common"] * (1.0 - luck))
-	total_weight += RARITY_WEIGHTS["rare"]
-	total_weight += int(RARITY_WEIGHTS["epic"] * (1.0 + luck * 5.0))
-	var weighted: Array = []
-	weighted.append_array(epic if randf() < 0.05 + luck * 0.2 else common)
+	var weighted: Array[Dictionary] = []
+	# Always include some of each rarity present in pool
+	if not epic.is_empty() and randf() < 0.05 + luck_stat * 0.2:
+		weighted.append_array(epic)
 	weighted.append_array(rare)
 	weighted.append_array(common)
 	weighted.shuffle()

@@ -12,7 +12,7 @@ extends CharacterBody2D
 @export var damage_cooldown: float = 1.0
 
 # ─── REFS ─────────────────────────────────────────────────
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: Polygon2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
 @onready var damage_timer: Timer = $DamageTimer
 
@@ -32,7 +32,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if player == null:
+	if player == null or not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player")
 		return
 	_move_toward_player(delta)
 	_check_player_contact()
@@ -47,11 +48,18 @@ func _move_toward_player(_delta: float) -> void:
 func _check_player_contact() -> void:
 	if not _can_damage:
 		return
-	if global_position.distance_to(player.global_position) < 32.0:
-		if player.has_method("take_damage"):
-			player.take_damage(contact_damage)
-			_can_damage = false
-			damage_timer.start()
+	if player == null or not is_instance_valid(player):
+		return
+	
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		var collider := collision.get_collider()
+		if collider == player:
+			if collider.has_method("take_damage"):
+				collider.take_damage(contact_damage)
+				_can_damage = false
+				damage_timer.start()
+			return
 
 
 func _on_damage_timer_timeout() -> void:
@@ -72,17 +80,21 @@ func _die() -> void:
 	remove_from_group("enemies")
 	EventBus.enemy_died.emit(enemy_type, global_position)
 	_drop_exp()
-	queue_free()
+	call_deferred("queue_free")
 
 
 func _drop_exp() -> void:
-	# World will handle spawning the orb via signal
-	pass
+	var orb_scene := load("res://scenes/gameplay/ExpOrb.tscn")
+	var orb = orb_scene.instantiate()
+	orb.global_position = global_position
+	call_deferred("add_sibling", orb)
+	if orb.has_method("setup"):
+		orb.setup(exp_value)
 
 
 func _flash_hit() -> void:
 	if _flash_tween:
 		_flash_tween.kill()
-	sprite.modulate = Color.WHITE * 2.0
+	sprite.color = Color(2, 2, 2, 1)
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(sprite, "modulate", Color.WHITE, 0.1)
+	_flash_tween.tween_property(sprite, "color", Color(0.9, 0.2, 0.2, 1), 0.1)

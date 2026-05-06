@@ -1,366 +1,210 @@
-# 📖 CELL SURGE — Game Design Document (GDD)
-**Versione:** 1.0  
-**Data:** Maggio 2026  
+# 🧬 CELL SURGE — Game Design Document (GDD)
+
+**Genere:** Mobile Auto-Shooter / Survivor  
 **Engine:** Godot 4.6.2  
-**Piattaforma:** Android / iOS (Mobile Portrait)  
-**Genere:** Auto-Shooter Top-Down Survivor  
+**Piattaforma:** iOS & Android (Portrait)  
+**Viewport:** 1080 × 1920  
+**Durata Run:** 20 minuti  
 
 ---
 
-## 1. VISIONE DEL GIOCO
+## 1. Concept & Vision
 
-### 1.1 Elevator Pitch
-> Cell Surge è un auto-shooter survivor per mobile ambientato dentro il corpo umano. Il giocatore controlla una cellula che deve sopravvivere a ondate infinite di patogeni, evolversi raccogliendo potenziamenti e diventare sempre più potente. Ogni run dura 20 minuti, ogni morte è una lezione, ogni upgrade è una scelta strategica.
+Cell Surge è un gioco mobile survivor-shooter ambientato all'interno del corpo umano.  
+Il giocatore controlla una **cellula immunitaria** che deve sopravvivere a ondate crescenti di patogeni (batteri, virus, funghi) per 20 minuti.
 
-### 1.2 Pillars Design
-| Pillar | Descrizione |
-|--------|-------------|
-| **Accessibilità** | Una mano, un dito. No tutorial lungo. Si capisce in 10 secondi. |
-| **Depth** | 8 armi, 30+ upgrade, synergies nascoste. Ore per masterizzare. |
-| **Progression** | Ogni run lascia qualcosa. Mai sprecare tempo. |
-| **Juice** | Ogni kill è soddisfacente. Il feedback audio/visivo è esagerato. |
-| **Social** | Leaderboard, record personali, screenshot share. |
+**Core Fantasy:** Essere una cellula del sistema immunitario che difende il corpo da un'infezione.
 
-### 1.3 Target Audience
-- Età: 16–35 anni
-- Casual gamer che cerca sessioni da 15-30 min
-- Fan di Vampire Survivors, Survivor.io, Archero
-- Mercato: Globale (testi in inglese, UI intuitiva)
+**Riferimenti:** Vampire Survivors, Brotato, Archero — adattato al formato mobile portrait con joystick virtuale.
 
 ---
 
-## 2. MECCANICHE DI GIOCO
-
-### 2.1 Controlli
-**Mobile:**  
-- **Joystick virtuale** (sinistro, bottom-left) → movimento del personaggio
-- Il giocatore muove solo il personaggio — le armi sparano in automatico verso il nemico più vicino
-- **Tap su power-up** a terra per raccoglierli (o auto-pickup nel raggio)
-
-**PC/Testing:**
-- WASD → movimento
-- Mouse click → selezione upgrade
-
-### 2.2 Gameplay Loop Core
+## 2. Core Loop
 
 ```
-START RUN
-    │
-    ▼
-MUOVI il personaggio per evitare i nemici
-    │
-    ▼
-UCCIDI i nemici → drop ORB EXP
-    │
-    ▼
-RACCOGLI le orb → riempi la barra EXP
-    │
-    ▼
-LEVEL UP → pausa gioco → scegli 1 di 3 upgrade casuali
-    │
-    ▼
-SOPRAVVIVI 20 minuti → Win Screen
-    │ (o muori prima)
-    ▼
-GAME OVER → statistiche → ottieni ORO in base a performance
-    │
-    ▼
-SPENDI ORO in meta-upgrade permanenti
-    │
-    └──────────────────────────────────────► START NUOVA RUN
+[ Muoviti & Schiva ] → [ Auto-Attacca ] → [ Raccogli XP ] → [ Level Up → Scegli Mutazione ] → [ Ripeti ]
+                                                                        ↓
+                                                              [ Muori / Sopravvivi 20 min ]
+                                                                        ↓
+                                                              [ Guadagna Gold → Meta-Upgrade ]
 ```
 
-### 2.3 Statistiche Personaggio
+### 2.1 Gameplay Loop (In-Run)
+1. La cellula **si muove** con il joystick virtuale
+2. Le armi **attaccano automaticamente** (auto-fire)
+3. I nemici uccisi lasciano **orbs di esperienza** (aminoacidi)
+4. Accumulando XP → **Level Up** → scelta tra 3 mutazioni random
+5. Le mutazioni potenziano armi, stats o aggiungono nuove abilità
+6. Ogni minuto la difficoltà aumenta (più nemici, più veloci, più HP)
+7. **Boss** a minuto 10 e 20
+8. Sopravvivere 20 minuti = **Vittoria**
 
-```gdscript
-max_health:        100.0   # HP massimi
-move_speed:        200.0   # pixel/secondo
-damage_mult:       1.0     # moltiplicatore danno globale
-attack_speed_mult: 1.0     # moltiplicatore velocità attacco
-area_mult:         1.0     # moltiplicatore area/range armi
-duration_mult:     1.0     # durata effetti
-exp_gain_mult:     1.0     # EXP guadagnata
-pickup_radius:     80.0    # raggio auto-pickup orb EXP
-luck:              0.0     # probabilità drop migliori / upgrade rari
-crit_chance:       0.0     # probabilità critico
-crit_mult:         1.5     # moltiplicatore danno critico
-armor:             0.0     # riduzione danno flat
-regen:             0.0     # HP/secondo rigenerazione
-```
-
-### 2.4 Sistema Armi
-
-#### Come funzionano
-- Ogni personaggio parte con **1 arma**
-- Si possono avere fino a **4 armi contemporaneamente**
-- Le armi si evolvono (2 livelli: base → potenziato → evolved)
-- L'evolved si sblocca con un'arma + il relativo passive item
-
-#### Tabella Armi
-
-| # | Nome | Tipo | Danno Base | Cadenza | Lvl Max | Description |
-|---|------|------|-----------|---------|---------|-------------|
-| 1 | Nucleo Pulse | Proiettile radiale | 15 | 1.5s | 5 | Spara N proiettili in cerchio |
-| 2 | Lash | Whip melee | 30 | 1.2s | 5 | Colpo ad arco frontale |
-| 3 | Cell Split | Piercing | 20 | 2.0s | 5 | Proiettile che trafigge i nemici |
-| 4 | Toxin | DOT area | 5/tick | 3.0s | 5 | Nuvola veleno persistente |
-| 5 | Membrane | Orbitante | 25 | — | 5 | Scudi che ruotano intorno al player |
-| 6 | Laser Ray | Direzionale | 50 | 2.5s | 5 | Laser verso il nemico più vicino |
-| 7 | Vortex | Pull + danno | 10/tick | — | 5 | Campo che attira e danneggia |
-| 8 | Antibody | Homing | 35 | 2.0s | 5 | Proiettile che segue il nemico |
-
-#### Evoluzioni (con passive abbinate)
-| Arma | Passive | Evolved | Bonus |
-|------|---------|---------|-------|
-| Nucleo Pulse | Energy Core | Nova Burst | Esplosione + knockback |
-| Lash | Blade Edge | Razor Whip | Bleeding DOT |
-| Toxin | Poison Flask | Plague Cloud | Area x3, contagio |
-| Laser Ray | Lens | Death Ray | Atraversa muri, piercing |
-
-### 2.5 Sistema Upgrade
-
-#### Categorie
-1. **Weapon Upgrade** — potenzia un'arma posseduta (livello +1)
-2. **Stat Upgrade** — aumenta una statistica del personaggio
-3. **Passive Item** — aggiunge un oggetto passivo (necessario per evoluzioni)
-4. **Special** — effetti unici, sbloccano meccaniche
-
-#### Peso Rarità
-| Rarità | Colore | Probabilità base |
-|--------|--------|-----------------|
-| Comune | Grigio | 70% |
-| Raro | Blu | 25% |
-| Epico | Viola | 5% → modificato da `luck` |
-
-#### Lista Upgrade (30+)
-
-**Stat Upgrades:**
-- +Max Health (x3 livelli)
-- +Regen (x3)
-- +Move Speed (x3)
-- +Damage (x3)
-- +Attack Speed (x3)
-- +Area (x3)
-- +EXP Gain (x2)
-- +Pickup Radius (x2)
-- +Armor (x2)
-- +Crit Chance (x2)
-- +Luck (x2)
-
-**Passive Items:**
-- Energy Core → evolve Nucleo Pulse
-- Blade Edge → evolve Lash
-- Poison Flask → evolve Toxin
-- Lens → evolve Laser Ray
-- Iron Shell → +Armor +Health
-- Stimulant → +Speed +Attack Speed
-- Magnet → +Pickup Radius ×2
-
-### 2.6 Nemici
-
-#### Comportamenti
-| Tipo | Nome | HP | Danno | Velocità | Comportamento |
-|------|------|----|----|-------|--------------|
-| Basic | Batterio | 30 | 10 | 80 | Chase player |
-| Fast | Virus | 15 | 8 | 160 | Flank player |
-| Tank | Fungo | 200 | 20 | 40 | Push through |
-| Ranged | Parassita | 40 | 15 | 60 | Mantieni distanza, spara |
-| Exploder | Spora | 25 | 40 area | 100 | Esplode alla morte |
-| Swarm | Batteriofago | 8 | 5 | 120 | Arriva in gruppo x15 |
-
-#### Boss
-| Minuto | Nome | HP | Meccanica Speciale |
-|--------|------|----|--------------------|
-| 10 | Super-Cellula | 5000 | Spawn add + carica |
-| 20 | Il Prione | 15000 | 3 fasi, meccaniche uniche |
-
-### 2.7 Wave System
-
-```
-Minuto 0–2:   Solo Batteri Base, low density
-Minuto 2–5:   + Virus Fast, densità media
-Minuto 5–8:   + Funghi Tank, elite random
-Minuto 8–10:  Rampa intensità, niente boss minuto
-Minuto 10:    ⚠️ BOSS: Super-Cellula
-Minuto 10–15: Mix 4 tipi nemici, alta densità
-Minuto 15–18: + Spora Esplosiva + Batteriofago
-Minuto 18–20: ENDGAME — tutti i tipi, max density
-Minuto 20:    ⚠️ BOSS FINALE: Il Prione
-Minuto 20+:   Infinito, solo "Hard Core" sopravvive
-```
-
-### 2.8 Sistema EXP e Livelli
-
-Curva EXP crescente:
-```
-Livello 1→2:   20 EXP
-Livello 2→3:   30 EXP
-...
-Livello N→N+1: 20 + (N-1) * 10 EXP
-```
-
-Max livello per run: 50 (teorico)
-Al level up: gioco pausato, scelta tra 3 upgrade (pesi rarità)
+### 2.2 Meta Loop (Tra le Run)
+1. Alla fine di ogni run → guadagni **Gold**
+2. Gold speso in **Meta-Upgrade** permanenti (HP, Velocità, Danno, ecc.)
+3. Sblocco di nuovi **personaggi** (cellule diverse con abilità uniche)
+4. Progressione graduale: ogni run rende il giocatore leggermente più forte
 
 ---
 
-## 3. PROGRESSIONE META
+## 3. Personaggi (Cellule)
 
-### 3.1 Valute
-| Valuta | Come si guadagna | Come si spende |
-|--------|-----------------|---------------|
-| **Oro** | Fine run (base + bonus) | Meta-upgrade, unlock personaggi |
-| **Gemme** | IAP, eventi daily | Continua dopo morte, skin, gemma → oro |
-| **Cristalli** | Completare achievment | Sblocco armi speciali |
+| ID | Nome | HP Base | Velocità | Abilità Passiva | Stato |
+|---|---|---|---|---|---|
+| `leuco` | Leucocita | 100 | 200 | Nessuna (base) | ✅ Implementato |
+| `macro` | Macrofago | 150 | 160 | +20% pickup radius | 🔲 TODO |
+| `linfo_t` | Linfocita T | 80 | 220 | +15% crit chance | 🔲 TODO |
+| `plasma` | Plasmacellula | 70 | 180 | +1 proiettile base | 🔲 TODO |
+| `nk` | Natural Killer | 90 | 200 | +25% danno ai boss | 🔲 TODO |
 
-### 3.2 Oro Guadagnato per Run
+---
+
+## 4. Nemici (Patogeni)
+
+### 4.1 Nemici Base
+
+| ID | Nome | HP | Velocità | Danno | XP | Comportamento |
+|---|---|---|---|---|---|---|
+| `batterio` | Batterio | 30 | 80 | 10 | 5 | Insegue diretto |
+| `virus` | Virus | 20 | 120 | 8 | 4 | Veloce, zigzag |
+| `fungo` | Fungo | 60 | 50 | 15 | 8 | Lento, tankoso |
+
+### 4.2 Boss
+
+| ID | Nome | HP | Minuto | Meccanica |
+|---|---|---|---|---|
+| `super_cellula` | Super Cellula | 2000 | 10:00 | Spawna mini-nemici, area denial |
+| `prione` | Prione | 5000 | 20:00 | Boss finale, pattern multipli |
+
+---
+
+## 5. Armi & Mutazioni
+
+### 5.1 Armi (Auto-fire)
+
+| ID | Nome | Tipo | Base Dmg | Fire Rate | Descrizione |
+|---|---|---|---|---|---|
+| `nucleus_pulse` | Nucleus Pulse | Radiale | 15 | 0.8/s | Spara proiettili in cerchio |
+| `enzyme_stream` | Enzyme Stream | Direzionale | 12 | 1.2/s | Spara verso il nemico più vicino |
+| `antibody_orbit` | Antibody Orbit | Orbitale | 8 | Passivo | Sfere che orbitano il player |
+| `cytokine_wave` | Cytokine Wave | Area | 20 | 0.5/s | Onda d'urto circolare |
+| `membrane_shield` | Membrane Shield | Difensiva | 5 | 0.3/s | Scudo che blocca proiettili e danneggia |
+| `phagocyte_burst` | Phagocyte Burst | Esplosiva | 25 | 0.4/s | Esplosione a contatto |
+
+### 5.2 Upgrade per Arma (5 livelli)
+
+Ogni arma ha 5 livelli di potenziamento:
+- **Lv 2-3:** Aumenta danno, velocità di fuoco
+- **Lv 4:** Aggiunge proiettili o area
+- **Lv 5:** Effetto speciale unico
+
+### 5.3 Mutazioni Passive
+
+| ID | Nome | Rarità | Effetto |
+|---|---|---|---|
+| `thick_membrane` | Thick Membrane | Common | +15 HP max |
+| `atp_boost` | ATP Boost | Common | +8% velocità |
+| `mitosis` | Mitosis | Rare | +1 proiettile a tutte le armi |
+| `rapid_division` | Rapid Division | Rare | +15% attack speed |
+| `evolution` | Evolution | Epic | +30% area effetto |
+| `crispr` | CRISPR | Epic | +10% crit chance |
+
+---
+
+## 6. Progressione delle Wave (20 minuti)
+
+| Minuto | Nemici | Spawn/Wave | Intervallo | Evento |
+|---|---|---|---|---|
+| 0-1 | Batterio | 2 | 2.0s | Inizio |
+| 2-3 | Batterio, Virus | 3 | 1.8s | — |
+| 4-7 | Batterio, Virus, Fungo | 4 | 1.5s | — |
+| 8-9 | Tutti | 6 | 1.2s | Intensificazione |
+| 10 | Tutti | 5 | 1.0s | 🔴 BOSS: Super Cellula |
+| 11-13 | Tutti | 5 | 1.0s | Post-boss |
+| 14-16 | Tutti | 7 | 0.9s | Late game |
+| 17-19 | Tutti | 8 | 0.8s | Endgame rush |
+| 20 | Tutti | 8 | 0.8s | 🔴 BOSS FINALE: Prione |
+
+---
+
+## 7. Meta-Progressione (Persistente)
+
+### 7.1 Valuta
+- **Gold:** Guadagnato ogni run (base 100 + tempo + livello + bonus vittoria)
+- **Gems:** Valuta premium (acquistabile con IAP)
+
+### 7.2 Meta-Upgrade (Gold)
+
+| ID | Nome | Effetto per Livello | Max Lv | Costo Base |
+|---|---|---|---|---|
+| `hp_up` | Vitality | +10 HP | 20 | 100 |
+| `speed_up` | Agility | +5 velocità | 15 | 80 |
+| `damage_up` | Power | +5% danno | 20 | 120 |
+| `exp_up` | Wisdom | +5% XP gain | 15 | 100 |
+| `armor_up` | Fortitude | +2 armor | 10 | 150 |
+| `regen_up` | Regeneration | +0.5 HP/s | 10 | 200 |
+| `magnet_up` | Magnetism | +10 pickup radius | 10 | 80 |
+| `luck_up` | Fortune | +5% luck | 10 | 150 |
+
+---
+
+## 8. Monetizzazione
+
+### 8.1 In-App Purchases
+- **Remove Ads:** €2.99 (una tantum)
+- **Gem Packs:** €0.99 / €4.99 / €9.99
+- **Starter Pack:** €1.99 (Gold + Gems + Personaggio bonus)
+
+### 8.2 Rewarded Ads
+- **Doppio Gold:** Guarda un ad per raddoppiare il gold della run
+- **Resurrezione:** Guarda un ad per continuare la run dopo la morte (1x per run)
+- **Cassa Gratuita:** Ogni 4 ore, guarda un ad per aprire una cassa bonus
+
+### 8.3 Daily Login
+- Bonus crescenti per login consecutivi (7 giorni → reset)
+- Giorno 7: Personaggio o Gems bonus
+
+---
+
+## 9. UI/UX Specifications
+
+→ Vedere **DESIGN_UI.md** per le specifiche dettagliate dell'HUD in-game.
+
+### 9.1 Palette Bioluminescenza
+- **Sfondo:** Nero profondo #000000 / #010103
+- **Ciano Fluorescente:** #00FFFF (XP bar, accenti, bordi UI)
+- **Verde Acido:** #39FF14 (HP alta, guarigione)
+- **Rosso Scarlatto:** #FF2400 (HP bassa, danno)
+- **Bianco Ghiaccio:** #F0F8FF (testo base)
+- **Giallo/Arancio:** #FFAC1C (damage numbers, gold)
+
+### 9.2 Screen Flow
 ```
-Base:          100 oro
-+10 per minuto sopravvissuto
-+5 per ogni livello raggiunto
-+50 se ucciso boss minuto 10
-+100 se completata run (20 min)
-Moltiplicatore: x1.5 con Premium/Season Pass
+MainMenu → World (Gameplay) → GameOver → MainMenu
+              ↓                    ↑
+          LevelUp (Pausa)    (Restart)
 ```
 
-### 3.3 Meta-Upgrade Tree (Albero Potenziamenti Permanenti)
+---
 
-**Sezione Offesa:**
-- +5% danno globale (max x10, costo 200/500/1000...)
-- +5% velocità attacco (max x5)
-- +10% area armi (max x5)
+## 10. Audio
 
-**Sezione Difesa:**
-- +10% HP max (max x10)
-- +1 HP/s regen (max x5)
-- +5% armor (max x5)
-
-**Sezione Fortuna:**
-- +5% EXP guadagnata (max x10)
-- +1% luck (max x5)
-- +10% pickup radius (max x5)
-
-**Sezione Speciale:**
-- Inizia ogni run con 1 upgrade extra (costo 5000)
-- Sblocca slot arma extra (costo 3000)
-- "Blessed Start" — primo upgrade sempre Epico (costo 2000)
-
-### 3.4 Personaggi Giocabili
-
-| # | Nome | Arma Iniziale | Passivo Unico | Sblocco |
-|---|------|--------------|--------------|---------|
-| 1 | **Leuco** (leucocita) | Nucleo Pulse | +20% HP max | Default |
-| 2 | **Fagos** (fagocita) | Lash | +20% velocità | 500 oro |
-| 3 | **Anticorpo** | Antibody | Inizia con 2 armi | 2000 oro |
-| 4 | **Mitosi** | Cell Split | +1 proiettile sempre | 5000 oro / IAP |
+| Categoria | Descrizione |
+|---|---|
+| **BGM Gameplay** | Ambient elettronico, toni bassi biologici, build-up crescente |
+| **BGM Menu** | Ambient calmo, toni misteriosi |
+| **SFX Sparo** | Suono morbido, "whoosh" organico |
+| **SFX Hit** | Impact breve, "squelch" |
+| **SFX Level Up** | Chime ascendente luminoso |
+| **SFX Pickup** | Tono breve positivo |
+| **SFX Death** | Suono cupo, dissoluzione |
 
 ---
 
-## 4. RETENTION E MONETIZZAZIONE
+## 11. Requisiti Tecnici
 
-### 4.1 Daily Retention Loop
-```
-GIORNO 1:  Tutorial + onboarding → regalo 200 oro
-GIORNO 2:  Sblocca primo meta-upgrade → video reward disponibile
-GIORNO 7:  Login settimanale → 500 oro + skin esclusiva
-GIORNO 30: "Core Player" badge → gemme gratis
-```
-
-**Daily Login Calendar (7 giorni loop):**
-- Giorno 1: 50 oro
-- Giorno 2: 1 gemma
-- Giorno 3: 100 oro
-- Giorno 4: 2 gemme
-- Giorno 5: 150 oro
-- Giorno 6: 3 gemme
-- Giorno 7: 500 oro + skin
-
-### 4.2 Ads
-
-| Tipo | Trigger | Frequenza | Skip |
-|------|---------|-----------|------|
-| Interstitial | Game Over | 1 ogni 2 partite | Dopo 5s |
-| Rewarded | "Revive" button / "+1 scelta upgrade" | Volontario | No skip |
-| Banner | Main Menu (solo free) | Sempre | No |
-
-**Remove Ads (€2.99):** rimuove interstitial e banner. Rewarded sempre disponibili.
-
-### 4.3 IAP Catalogue
-
-| ID | Nome | Prezzo | Contenuto |
-|----|------|--------|---------|
-| `remove_ads` | Niente Più Pub | €2.99 | Nessun interstitial/banner |
-| `starter_pack` | Starter Pack | €1.99 | Personaggio Anticorpo + 1000 oro + 5 gemme |
-| `gold_500` | 500 Oro | €0.99 | 500 oro |
-| `gold_2500` | 2500 Oro | €3.99 | 2500 oro (+bonus 500) |
-| `gold_7000` | 7000 Oro | €9.99 | 7000 oro (+bonus 2000) |
-| `gems_10` | 10 Gemme | €0.99 | 10 gemme |
-| `gems_50` | 50 Gemme | €3.99 | 50 gemme |
-| `season_pass` | Season Pass | €4.99/mese | +50% oro, daily reward premium, skin esclusiva |
-
-### 4.4 Mechanic of "One More Run"
-- **Instant respawn**: pulsante "Riprova" immediatamente disponibile
-- **Death screen** mostra i progressi fatti (level raggiunto, nemici uccisi, armi usate)
-- **"Così vicino!"** — se muori dopo il minuto 15, mostra "+X% per sopravvivere" con meta-upgrade suggerito
-- **Revive**: 1x gratis per run (video ad), poi gemme
-
----
-
-## 5. AUDIO E GRAFICA
-
-### 5.1 Visual Style
-- **Stile:** Vector/cartoon 2D, colori vivaci su sfondo scuro
-- **Palette principale:** Viola scuro (sfondo) + Verde acido (player) + Rosso (nemici)
-- **Effetti:** Screen shake moderato, hit flash, particle burst per ogni kill
-- **UI:** Minimalista, grande font, alta leggibilità su mobile
-
-### 5.2 Audio Design
-- **Musica:** Sintetica, ritmo energico, intensità aumenta con i nemici
-- **SFX Kill:** "Splat" soddisfacente, variazioni pitch per varietà
-- **SFX Level Up:** Suono positivo, ascendente
-- **SFX Hit Subito:** Impatto + flash rosso + screen shake lieve
-- **Boss Music:** Traccia dedicata, si attiva quando appare il boss
-
-### 5.3 Juice (Feedback Esagerato = Dipendenza)
-- **Kill:** particelle colorate, orb EXP vola verso player, numero danno pop
-- **Level Up:** freeze 0.5s + effetto luce su tutto lo schermo + musica
-- **Critico:** testo "CRIT!" giallo + danno x2 visibile + suono speciale
-- **Combo kill:** tanti nemici insieme → effetto cascata
-
----
-
-## 6. ARCHITETTURA TECNICA
-
-### 6.1 Autoload/Singleton
-
-| Nome | Responsabilità |
-|------|---------------|
-| `EventBus` | Signal globali per decoupling totale |
-| `GameManager` | Stato run corrente, statistiche, timer |
-| `SaveManager` | JSON save/load, oro, meta, personaggi |
-| `AudioManager` | Pool audio, volume, SFX/BGM |
-
-### 6.2 Sistema Object Pool
-Tutti i proiettili, EXP orb, particelle e nemici vengono da pool pre-allocati a inizio scena. Nessun `instantiate()` durante il gameplay = 60 FPS stabili su Android mid-range.
-
-### 6.3 Performance Target
-- **FPS target:** 60 FPS stabile
-- **Nemici a schermo:** fino a 200 contemporaneamente
-- **Proiettili a schermo:** fino a 100
-- **Dispositivo target min:** Android con 2GB RAM, GPU Adreno 505
-
----
-
-## 7. FEATURE ROADMAP POST-LAUNCH
-
-| Release | Feature |
-|---------|---------|
-| **1.1** | + 2 nuovi personaggi, + 3 armi |
-| **1.2** | Co-op 2 giocatori online |
-| **1.3** | Boss Rush mode (solo boss, run breve) |
-| **1.4** | Stagioni: ogni mese tema diverso |
-| **2.0** | Endgame: "Ascension" tier — infinite scaling |
-
----
-
-*Documento redatto per uso interno. Versione 1.0 — Maggio 2026.*
+- **Target FPS:** 60fps su dispositivi mid-range
+- **Object Pooling:** Per proiettili, nemici, effetti
+- **Rendering:** Mobile (Forward Mobile)
+- **Texture Filter:** Nearest (pixel art style)
+- **Min SDK:** iOS 14 / Android 8.0
