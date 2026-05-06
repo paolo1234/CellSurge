@@ -39,8 +39,8 @@ func _ready() -> void:
 	_instantiate_ui()
 
 	# Connect joystick to player
-	if joystick and joystick.has_signal("input_changed"):
-		joystick.input_changed.connect(_on_joystick_input_changed)
+	if joystick and joystick.has_signal("direction_changed"):
+		joystick.direction_changed.connect(_on_joystick_input_changed)
 
 
 func _setup_player_systems() -> void:
@@ -90,10 +90,24 @@ func _instantiate_ui() -> void:
 	game_over_screen = game_over_scene.instantiate()
 	add_child(game_over_screen)
 
-	# Instantiate VirtualJoystick
-	var joystick_scene := preload("res://scenes/ui/VirtualJoystick.tscn")
+	# Instantiate VirtualJoystick from plugin
+	var joystick_canvas := CanvasLayer.new()
+	joystick_canvas.layer = 100
+	add_child(joystick_canvas)
+	var joystick_scene := preload("res://addons/virtual_joystick/virtual_joystick.tscn")
 	joystick = joystick_scene.instantiate()
-	add_child(joystick)
+	joystick.mode = VirtualJoystick.Modes.DYNAMIC
+	joystick.action_left = &"move_left"
+	joystick.action_right = &"move_right"
+	joystick.action_up = &"move_up"
+	joystick.action_down = &"move_down"
+	joystick.joystick_scale = 1.5
+	joystick.base_texture = preload("res://addons/virtual_joystick/textures/base_texture.svg")
+	joystick.stick_texture = preload("res://addons/virtual_joystick/textures/stick_texture.svg")
+	joystick.process_mode = Node.PROCESS_MODE_ALWAYS
+	# Set area to bottom half of screen
+	joystick.dynamic_area_top_margin = 0.5
+	joystick_canvas.add_child(joystick)
 
 
 func _setup_hp_ring() -> void:
