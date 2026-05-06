@@ -1,0 +1,8 @@
+# Godot 4 .gitignore
+.godot/
+*.import
+export_credentials.cfg
+*.tmp
+android/
+.DS_Store
+Thumbs.db
