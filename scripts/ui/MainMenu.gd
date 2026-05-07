@@ -86,10 +86,18 @@ func _on_play_pressed() -> void:
 
 
 func _on_settings_pressed() -> void:
+	visible = false
 	var settings := preload("res://scripts/ui/SettingsMenu.gd").new()
+	settings.back_pressed.connect(_on_menu_closed)
 	get_tree().root.add_child(settings)
 
 
 func _on_upgrades_pressed() -> void:
+	visible = false
 	var upgrades := preload("res://scripts/ui/UpgradesMenu.gd").new()
+	upgrades.back_pressed.connect(_on_menu_closed)
 	get_tree().root.add_child(upgrades)
+
+
+func _on_menu_closed() -> void:
+	visible = true

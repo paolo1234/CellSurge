@@ -2,6 +2,8 @@
 ## Settings menu with volume controls and options.
 extends Control
 
+signal back_pressed
+
 const COLOR_CYAN := Color("#00FFFF")
 const COLOR_WHITE := Color("#F0F8FF")
 const COLOR_GOLD := Color("#FFAC1C")
@@ -160,4 +162,5 @@ func _on_vibration_toggled(toggled: bool) -> void:
 
 
 func _on_back_pressed() -> void:
+	back_pressed.emit()
 	queue_free()

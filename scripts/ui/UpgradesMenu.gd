@@ -2,6 +2,8 @@
 ## Menu for purchasing permanent meta-upgrades with gold.
 extends Control
 
+signal back_pressed
+
 const COLOR_CYAN := Color("#00FFFF")
 const COLOR_GOLD := Color("#FFAC1C")
 const COLOR_WHITE := Color("#F0F8FF")
@@ -260,4 +262,5 @@ func _on_buy_pressed(upgrade_id: String, _btn: Button) -> void:
 
 
 func _on_back_pressed() -> void:
+	back_pressed.emit()
 	queue_free()
