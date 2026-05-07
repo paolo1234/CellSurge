@@ -183,7 +183,9 @@ func _on_restart_pressed() -> void:
 
 
 func _hide_joysticks() -> void:
-	get_tree().call_group("joysticks", "hide")
+	if get_tree():
+		get_tree().call_group("joysticks", "hide")
 
 func _show_joysticks() -> void:
-	get_tree().call_group("joysticks", "show")
+	if get_tree():
+		get_tree().call_group("joysticks", "show")

@@ -160,10 +160,12 @@ func show_choices(choices: Array[Dictionary], _level: int) -> void:
 
 
 func _hide_joysticks() -> void:
-	get_tree().call_group("joysticks", "hide")
+	if get_tree():
+		get_tree().call_group("joysticks", "hide")
 
 func _show_joysticks() -> void:
-	get_tree().call_group("joysticks", "show")
+	if get_tree():
+		get_tree().call_group("joysticks", "show")
 
 
 func _get_rarity_color(rarity: String) -> Color:
