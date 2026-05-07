@@ -156,7 +156,10 @@ func _create_upgrade_card(upg: Dictionary) -> Control:
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.02, 0.04, 0.08, 0.85)
 	style.set_corner_radius_all(24)
-	style.border_width_all = 3
+	style.border_width_left = 3
+	style.border_width_right = 3
+	style.border_width_top = 3
+	style.border_width_bottom = 3
 	style.border_color = COLOR_CYAN.darkened(0.5)
 	style.shadow_color = COLOR_CYAN * Color(1, 1, 1, 0.15)
 	style.shadow_size = 15
@@ -234,7 +237,10 @@ func _style_gold_pill(lbl: Label) -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.0, 0.0, 0.0, 0.6)
 	style.set_corner_radius_all(20)
-	style.border_width_all = 2
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
 	style.border_color = COLOR_GOLD.darkened(0.5)
 	style.content_margin_left = 20
 	style.content_margin_right = 20
@@ -246,7 +252,10 @@ func _style_buy_button(btn: Button) -> void:
 	var btn_style := StyleBoxFlat.new()
 	btn_style.bg_color = COLOR_GOLD.darkened(0.4)
 	btn_style.set_corner_radius_all(15)
-	btn_style.border_width_all = 3
+	btn_style.border_width_left = 3
+	btn_style.border_width_right = 3
+	btn_style.border_width_top = 3
+	btn_style.border_width_bottom = 3
 	btn_style.border_color = COLOR_GOLD
 	btn_style.shadow_color = COLOR_GOLD * Color(1, 1, 1, 0.3)
 	btn_style.shadow_size = 10
@@ -273,7 +282,10 @@ func _style_bottom_button() -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.0, 0.1, 0.2, 0.8)
 	style.set_corner_radius_all(35)
-	style.border_width_all = 4
+	style.border_width_left = 4
+	style.border_width_right = 4
+	style.border_width_top = 4
+	style.border_width_bottom = 4
 	style.border_color = COLOR_CYAN
 	style.shadow_color = COLOR_CYAN_GLOW
 	style.shadow_size = 20

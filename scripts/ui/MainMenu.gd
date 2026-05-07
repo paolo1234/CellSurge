@@ -14,7 +14,7 @@ const COLOR_WHITE := Color("#FFFFFF")
 @onready var title_label: Label = $TitleLabel
 
 # Top Bar
-@onready var store_btn: Button = $TopBar/StoreButton
+@onready var store_btn: Button = $StoreButton
 @onready var gold_label: Label = $TopBar/GoldLabel
 
 # Centro
