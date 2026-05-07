@@ -89,6 +89,7 @@ func take_damage(amount: float) -> void:
 	EventBus.show_floating_text.emit(str(int(amount)), global_position, Color.YELLOW)
 	GameManager.register_damage(amount)
 	_flash_hit()
+	AudioManager.play_hit()
 	if current_health <= 0.0:
 		_die()
 
@@ -96,6 +97,7 @@ func take_damage(amount: float) -> void:
 func _die() -> void:
 	remove_from_group("enemies")
 	_spawn_death_effect()
+	AudioManager.play_death()
 	EventBus.enemy_died.emit(enemy_type, global_position)
 	_drop_exp()
 	call_deferred("queue_free")

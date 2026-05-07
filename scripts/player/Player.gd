@@ -86,6 +86,7 @@ func take_damage(amount: float) -> void:
 	_flash_hit()
 	_start_invincibility()
 	EventBus.screen_shake_requested.emit(3.0, 0.15)
+	AudioManager.play_damage()
 	if current_health <= 0.0:
 		_die()
 
