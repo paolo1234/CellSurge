@@ -168,4 +168,5 @@ func _on_screen_shake(intensity: float, duration: float) -> void:
 
 
 func _on_joystick_input_changed(direction: Vector2) -> void:
-	player.set_meta("joystick_input", direction)
+	if is_instance_valid(player):
+		player.set_meta("joystick_input", direction)
