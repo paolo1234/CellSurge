@@ -26,6 +26,10 @@ const UPGRADES := {
 	"dodge":      {"name": "Slippery Surface",    "desc": "+10% Dodge Chance",      "rarity": "epic",    "max_stack": 2, "stat": "dodge",       "value": 0.10},
 	"explosion":   {"name": "Volatile Cell",       "desc": "+20% Explosion Area",   "rarity": "rare",    "max_stack": 3, "stat": "explosion_area","value": 0.20},
 	"speed_boost":  {"name": "Adrenaline",        "desc": "+30% Speed for 3s after kill", "rarity": "epic", "max_stack": 2, "stat": "speed_boost", "value": 0.30},
+	# WEAPON UPGRADES - Get new weapons!
+	"weapon_spike":   {"name": "Spike Launcher",    "desc": "FIRE SPIKES IN ALL DIRECTIONS", "rarity": "rare",  "max_stack": 1, "type": "weapon", "script": "res://scripts/player/weapons/SpikeShoot.gd"},
+	"weapon_shotgun": {"name": "Shotgun Blast",     "desc": "FIRE BURSTS OF PELLETS", "rarity": "rare",   "max_stack": 1, "type": "weapon", "script": "res://scripts/player/weapons/ShotgunBlast.gd"},
+	"weapon_orbit":   {"name": "Plasma Orbit",     "desc": "ORBITING PLASMA ORBS", "rarity": "epic",    "max_stack": 1, "type": "weapon", "script": "res://scripts/player/weapons/PlasmaOrbit.gd"},
 	# HEAL
 	"heal_small":   {"name": "Glucose Injection",    "desc": "Recover 30 HP",          "rarity": "common",  "max_stack": 99, "type": "heal", "value": 30.0},
 	"heal_big":     {"name": "Stem Cell Boost",      "desc": "Recover 60% Max HP",     "rarity": "rare",    "max_stack": 99, "type": "heal_percent", "value": 0.6},
@@ -77,17 +81,19 @@ func apply_upgrade(upgrade_id: String) -> void:
 			var is_percent: bool = data.get("is_percent", false)
 			if stat != "" and stat in _player.stats:
 				if is_percent:
-					# Add the percentage value directly (e.g. +0.10 to damage_mult)
 					_player.stats[stat] += value
 				else:
 					_player.stats[stat] += value
-				# Special: max_health also restores HP
 				if stat == "max_health":
 					_player.current_health = minf(_player.current_health + value, _player.stats.max_health)
 		"heal":
 			_player.heal(float(data.get("value", 0)))
 		"heal_percent":
 			_player.heal(_player.stats.max_health * float(data.get("value", 0)))
+		"weapon":
+			var script_path: String = data.get("script", "")
+			if script_path != "":
+				_add_weapon(script_path)
 
 	# Note: upgrade_selected is emitted by World._on_upgrade_selected which called this.
 	# Do NOT re-emit here to avoid infinite signal loop.
@@ -109,10 +115,16 @@ func _apply_luck_to_pool(pool: Array) -> Array[Dictionary]:
 	var rare := pool.filter(func(u): return u["data"]["rarity"] == "rare")
 	var epic := pool.filter(func(u): return u["data"]["rarity"] == "epic")
 	var weighted: Array[Dictionary] = []
-	# Always include some of each rarity present in pool
 	if not epic.is_empty() and randf() < 0.05 + luck_stat * 0.2:
 		weighted.append_array(epic)
 	weighted.append_array(rare)
 	weighted.append_array(common)
 	weighted.shuffle()
 	return weighted
+
+
+func _add_weapon(script_path: String) -> void:
+	var weapon_script = load(script_path)
+	if weapon_script:
+		_player.add_weapon(weapon_script)
+		EventBus.weapon_added.emit(script_path)
