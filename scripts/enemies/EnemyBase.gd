@@ -6,8 +6,10 @@ extends CharacterBody2D
 # ─── STATS (override per type) ────────────────────────────
 @export var enemy_type: String = "enemy_base"
 @export var max_health: float = 30.0
+@export var base_max_health: float = 30.0
 @export var move_speed: float = 80.0
 @export var contact_damage: float = 10.0
+@export var base_contact_damage: float = 10.0
 @export var exp_value: float = 5.0
 @export var damage_cooldown: float = 1.0
 
@@ -22,13 +24,28 @@ var player: CharacterBody2D
 var _flash_tween: Tween
 var _can_damage: bool = true
 
+# Scaling da WaveManager
+var _hp_mult: float = 1.0
+var _dmg_mult: float = 1.0
+
 
 func _ready() -> void:
 	add_to_group("enemies")
+	base_max_health = max_health
+	base_contact_damage = contact_damage
 	current_health = max_health
 	player = get_tree().get_first_node_in_group("player")
 	damage_timer.wait_time = damage_cooldown
 	damage_timer.timeout.connect(_on_damage_timer_timeout)
+
+
+func apply_scaling(hp_mult: float, dmg_mult: float) -> void:
+	_hp_mult = hp_mult
+	_dmg_mult = dmg_mult
+	max_health = base_max_health * hp_mult
+	current_health = max_health
+	contact_damage = base_contact_damage * dmg_mult
+	move_speed *= (1.0 + (hp_mult - 1.0) * 0.1)  # slight speed increase with HP
 
 
 func _physics_process(delta: float) -> void:

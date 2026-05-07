@@ -20,9 +20,16 @@ const UPGRADES := {
 	"luck_up":      {"name": "Lucky Mutation",       "desc": "+5% Luck",               "rarity": "rare",    "max_stack": 3, "stat": "luck",        "value": 0.05},
 	"pierce_up":    {"name": "Penetrating Strike",   "desc": "Projectiles pierce +1",  "rarity": "epic",    "max_stack": 2, "stat": "piercing",    "value": 1},
 	"proj_up":      {"name": "Cell Division",        "desc": "+1 Projectile",          "rarity": "epic",    "max_stack": 3, "stat": "projectile_count", "value": 1},
+	# SPECIAL - NEW
+	"lifesteal":    {"name": "Vampiric Tendril",    "desc": "+5% Life Steal",         "rarity": "epic",    "max_stack": 2, "stat": "lifesteal",   "value": 0.05},
+	"thorns":      {"name": "Spiky Membrane",     "desc": "Enemies take 5 DMG when hitting", "rarity": "rare", "max_stack": 3, "stat": "thorns",      "value": 5.0},
+	"dodge":      {"name": "Slippery Surface",    "desc": "+10% Dodge Chance",      "rarity": "epic",    "max_stack": 2, "stat": "dodge",       "value": 0.10},
+	"explosion":   {"name": "Volatile Cell",       "desc": "+20% Explosion Area",   "rarity": "rare",    "max_stack": 3, "stat": "explosion_area","value": 0.20},
+	"speed_boost":  {"name": "Adrenaline",        "desc": "+30% Speed for 3s after kill", "rarity": "epic", "max_stack": 2, "stat": "speed_boost", "value": 0.30},
 	# HEAL
 	"heal_small":   {"name": "Glucose Injection",    "desc": "Recover 30 HP",          "rarity": "common",  "max_stack": 99, "type": "heal", "value": 30.0},
 	"heal_big":     {"name": "Stem Cell Boost",      "desc": "Recover 60% Max HP",     "rarity": "rare",    "max_stack": 99, "type": "heal_percent", "value": 0.6},
+	"heal_full":    {"name": "Full Restoration",   "desc": "Recover 100% Max HP",    "rarity": "epic",    "max_stack": 1,  "type": "heal_percent", "value": 1.0},
 }
 
 const RARITY_WEIGHTS := {
