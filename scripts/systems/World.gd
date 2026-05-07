@@ -87,7 +87,7 @@ func _create_background() -> void:
 	bg.name = "Background"
 	bg.position = Vector2(540, 480)
 	bg.scale = Vector2(0.65, 0.65)
-	var bg_texture = load("res://audio/background.png")
+	var bg_texture = load("res://assets/backgrounds/background.png")
 	if bg_texture:
 		bg.texture = bg_texture
 		bg.modulate = Color(1, 1, 1, 0.25)
