@@ -44,11 +44,13 @@ const RARITY_WEIGHTS := {
 
 var _stacks: Dictionary = {}   # upgrade_id → current stack count
 var _player: CharacterBody2D
+var _obtained_weapons: Array = []  # Track obtained weapons
 
 
 func setup(player: CharacterBody2D) -> void:
 	_player = player
 	_stacks.clear()
+	_obtained_weapons.clear()
 
 
 func get_choices(count: int = 3) -> Array:
@@ -104,6 +106,9 @@ func _get_available_upgrades() -> Array:
 	for id in UPGRADES:
 		var data = UPGRADES[id]
 		var stack: int = _stacks.get(id, 0)
+		# Skip if already obtained weapon
+		if data.get("type") == "weapon" and data.get("script") in _obtained_weapons:
+			continue
 		if stack < int(data.get("max_stack", 1)):
 			result.append({"id": id, "data": data})
 	return result
@@ -135,4 +140,5 @@ func _add_weapon(script_path: String) -> void:
 	var weapon_script = load(script_path)
 	if weapon_script:
 		_player.add_weapon(weapon_script)
+		_obtained_weapons.append(script_path)
 		EventBus.weapon_added.emit(script_path)
