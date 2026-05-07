@@ -18,6 +18,28 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.05, 0.02, 0.1, 1)
 
+[node name="TopBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 20.0
+offset_bottom = 100.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+
+[node name="StoreButton" type="Button" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🛒 NEGOZIO"
+
+[node name="Spacer" type="Control" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GoldLabel" type="Label" parent="TopBar"]
+layout_mode = 2
+text = "💰 0"
+
 [node name="TitleLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 5
@@ -32,45 +54,51 @@ text = "CELL SURGE"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -100.0
-offset_right = 150.0
-offset_bottom = 200.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-alignment = 1
 
-[node name="PlayButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+[node name="PlayButton" type="Button" parent="CenterContainer"]
+custom_minimum_size = Vector2(220, 220)
 layout_mode = 2
-text = "PLAY"
+text = "▶
+GIOCA"
 
-[node name="UpgradesButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-text = "UPGRADES"
-
-[node name="SettingsButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-text = "SETTINGS"
-
-[node name="GoldLabel" type="Label" parent="."]
+[node name="BottomPanel" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 0.0
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = 60.0
-grow_horizontal = 0
-text = "Gold: 0"
-horizontal_alignment = 1
+anchor_bottom = 1.0
+offset_left = 200.0
+offset_top = -180.0
+offset_right = -200.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="BottomNav" type="HBoxContainer" parent="BottomPanel"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="ProfileButton" type="Button" parent="BottomPanel/BottomNav"]
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 2
+text = "👤
+PROFILO"
+
+[node name="SettingsButton" type="Button" parent="BottomPanel/BottomNav"]
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 2
+text = "⚙
+IMPOSTAZIONI"
+
+[node name="RecordsButton" type="Button" parent="BottomPanel/BottomNav"]
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 2
+text = "🏆
+RECORD"

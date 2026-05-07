@@ -6,3 +6,6 @@ export_credentials.cfg
 android/
 .DS_Store
 Thumbs.db
+*.apk
+*.apk.idsig
+export_presets.cfg

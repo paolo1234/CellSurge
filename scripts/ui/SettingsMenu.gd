@@ -19,6 +19,17 @@ func _ready() -> void:
 	set_process_input(true)
 
 
+func _get_setting(key: String, default_value) -> Variant:
+	if has_node("/root/SaveManager"):
+		return get_node("/root/SaveManager").get_setting(key, default_value)
+	return default_value
+
+
+func _set_setting(key: String, value: Variant) -> void:
+	if has_node("/root/SaveManager"):
+		get_node("/root/SaveManager").set_setting(key, value)
+
+
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		_on_back_pressed()
@@ -59,7 +70,7 @@ func _build_ui() -> void:
 	sfx_container.add_child(sfx_label)
 
 	_sfx_slider = _create_slider()
-	_sfx_slider.value = SaveManager.get_setting("sfx_volume", 1.0)
+	_sfx_slider.value = _get_setting("sfx_volume", 1.0)
 	_sfx_slider.value_changed.connect(_on_sfx_changed)
 	sfx_container.add_child(_sfx_slider)
 
@@ -74,7 +85,7 @@ func _build_ui() -> void:
 	music_container.add_child(music_label)
 
 	_music_slider = _create_slider()
-	_music_slider.value = SaveManager.get_setting("music_volume", 1.0)
+	_music_slider.value = _get_setting("music_volume", 1.0)
 	_music_slider.value_changed.connect(_on_music_changed)
 	music_container.add_child(_music_slider)
 
@@ -89,7 +100,7 @@ func _build_ui() -> void:
 	vib_container.add_child(vib_label)
 
 	_vibration_check = CheckButton.new()
-	_vibration_check.button_pressed = SaveManager.get_setting("vibration", true)
+	_vibration_check.button_pressed = _get_setting("vibration", true)
 	_vibration_check.toggled.connect(_on_vibration_toggled)
 	vib_container.add_child(_vibration_check)
 
@@ -154,15 +165,15 @@ func _style_button(btn: Button) -> void:
 
 
 func _on_sfx_changed(value: float) -> void:
-	SaveManager.set_setting("sfx_volume", value)
+	_set_setting("sfx_volume", value)
 
 
 func _on_music_changed(value: float) -> void:
-	SaveManager.set_setting("music_volume", value)
+	_set_setting("music_volume", value)
 
 
 func _on_vibration_toggled(toggled: bool) -> void:
-	SaveManager.set_setting("vibration", toggled)
+	_set_setting("vibration", toggled)
 
 
 func _on_back_pressed() -> void:
