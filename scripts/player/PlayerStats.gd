@@ -19,6 +19,9 @@ var piercing: int = 0              # bonus pierce count
 # ─── SURVIVAL ─────────────────────────────────────────────
 var armor: float = 0.0             # flat damage reduction
 var regen: float = 0.0             # HP per second
+var dodge: float = 0.0             # 0.0 – 1.0 chance to dodge damage
+var thorns: float = 0.0            # damage dealt to enemies on contact
+var lifesteal: float = 0.0         # 0.0 – 1.0 fraction of damage healed
 
 # ─── ECONOMY ──────────────────────────────────────────────
 var exp_gain_mult: float = 1.0
@@ -28,6 +31,10 @@ var luck: float = 0.0              # affects upgrade rarity
 # ─── CRIT ─────────────────────────────────────────────────
 var crit_chance: float = 0.0       # 0.0 – 1.0
 var crit_mult: float = 2.0
+
+# ─── SPECIAL ──────────────────────────────────────────────
+var explosion_area: float = 0.0    # bonus explosion area multiplier
+var speed_boost: float = 0.0       # temporary speed boost after kill
 
 
 func apply_meta_upgrades() -> void:
@@ -50,4 +57,7 @@ func calculate_damage(base_damage: float) -> float:
 
 
 func calculate_incoming_damage(raw: float) -> float:
+	# Dodge check
+	if dodge > 0.0 and randf() < dodge:
+		return 0.0  # Dodged!
 	return max(1.0, raw - armor)

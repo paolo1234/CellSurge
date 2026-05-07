@@ -1,19 +1,24 @@
 ## AudioManager.gd
 ## Centralized audio: SFX pool, music control, volume settings.
+## All sounds are generated procedurally — no external files needed.
 extends Node
+
+const SfxGen := preload("res://autoloads/SfxGenerator.gd")
 
 var sfx_players: Array = []
 var music_player: AudioStreamPlayer
 const POOL_SIZE := 16
 
-# AudioStream references - assign these after adding audio files!
+# AudioStream references — generated procedurally
 var sfx_hit: AudioStream
 var sfx_pickup: AudioStream
 var sfx_levelup: AudioStream
 var sfx_shoot: AudioStream
 var sfx_explosion: AudioStream
 var sfx_damage: AudioStream
+var sfx_death: AudioStream
 var music_battle: AudioStream
+var music_menu: AudioStream
 
 
 func _ready() -> void:
@@ -25,26 +30,23 @@ func _ready() -> void:
 	
 	# Music player
 	music_player = AudioStreamPlayer.new()
-	music_player.bus = "Music"
 	add_child(music_player)
 	
-	# Load audio files
-	_load_audio()
-	
+	# Generate all audio procedurally
+	_generate_audio()
 	_apply_saved_volumes()
 
 
-func _load_audio() -> void:
-	# Load SFX
-	sfx_hit = load("res://audio/sfx/hit.ogg")
-	sfx_pickup = load("res://audio/sfx/pickup.ogg")
-	sfx_levelup = load("res://audio/sfx/levelup.ogg")
-	sfx_shoot = load("res://audio/sfx/shoot.ogg")
-	sfx_explosion = load("res://audio/sfx/explosion.ogg")
-	sfx_damage = load("res://audio/sfx/damage.ogg")
-	
-	# Load music
-	music_battle = load("res://audio/music.ogg")
+func _generate_audio() -> void:
+	sfx_hit = SfxGen.generate_hit()
+	sfx_pickup = SfxGen.generate_pickup_beep()
+	sfx_levelup = SfxGen.generate_levelup_arpeggio()
+	sfx_shoot = SfxGen.generate_shoot()
+	sfx_explosion = SfxGen.generate_explosion()
+	sfx_damage = SfxGen.generate_damage()
+	sfx_death = SfxGen.generate_explosion()
+	music_battle = preload("res://audio/Cellular_Siege.mp3")
+	music_menu = preload("res://audio/Cellular_Siege.mp3")
 
 
 func play_sfx(stream: AudioStream, pitch_variation: float = 0.1) -> void:
@@ -54,11 +56,11 @@ func play_sfx(stream: AudioStream, pitch_variation: float = 0.1) -> void:
 		if not player.playing:
 			player.stream = stream
 			player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
-			player.bus = "SFX"
 			var sfx_vol: float = SaveManager.get_setting("sfx_volume", 1.0)
 			player.volume_db = linear_to_db(sfx_vol)
 			player.play()
 			return
+	# All busy — use first one
 	sfx_players[0].stream = stream
 	sfx_players[0].play()
 
@@ -74,11 +76,14 @@ func play_music(stream: AudioStream, fade_in: float = 1.0) -> void:
 	music_player.volume_db = -80.0
 	music_player.play()
 	var music_vol: float = SaveManager.get_setting("music_volume", 1.0)
+	var target_db := linear_to_db(music_vol) - 6.0  # Music a bit quieter than SFX
 	var tween2 := create_tween()
-	tween2.tween_property(music_player, "volume_db", linear_to_db(music_vol), fade_in / 2.0)
+	tween2.tween_property(music_player, "volume_db", target_db, fade_in)
 
 
 func stop_music(fade_out: float = 1.0) -> void:
+	if not music_player.playing:
+		return
 	var tween := create_tween()
 	tween.tween_property(music_player, "volume_db", -80.0, fade_out)
 	await tween.finished
@@ -86,14 +91,7 @@ func stop_music(fade_out: float = 1.0) -> void:
 
 
 func _apply_saved_volumes() -> void:
-	var sfx_vol: float = SaveManager.get_setting("sfx_volume", 1.0)
-	var music_vol: float = SaveManager.get_setting("music_volume", 1.0)
-	var sfx_idx := AudioServer.get_bus_index("SFX")
-	var music_idx := AudioServer.get_bus_index("Music")
-	if sfx_idx >= 0:
-		AudioServer.set_bus_volume_db(sfx_idx, linear_to_db(sfx_vol))
-	if music_idx >= 0:
-		AudioServer.set_bus_volume_db(music_idx, linear_to_db(music_vol))
+	pass  # Volumes applied per-play in play_sfx/play_music
 
 
 # Convenience methods for common sounds
@@ -118,4 +116,4 @@ func play_damage() -> void:
 
 
 func play_death() -> void:
-	play_sfx(sfx_explosion, 0.3)
+	play_sfx(sfx_death, 0.3)

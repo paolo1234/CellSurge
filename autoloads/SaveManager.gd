@@ -1,142 +1,106 @@
 ## SaveManager.gd
-## Handles all persistent data: gold, unlocks, meta-upgrades, settings.
+## Handles persistence: gold, meta-upgrades, settings, statistics.
 extends Node
 
-const SAVE_PATH := "user://save_data.json"
+const SAVE_PATH := "user://save.json"
 
-var data: Dictionary = {}
-
-const DEFAULT_DATA := {
+var _data: Dictionary = {
 	"gold": 0,
-	"gems": 0,
-	"remove_ads": false,
-	"unlocked_characters": ["leuco"],
-	"selected_character": "leuco",
 	"meta_upgrades": {},
-	"best_time": 0.0,
-	"best_kills": 0,
-	"total_runs": 0,
-	"daily_login": {"last_day": "", "streak": 0, "day_index": 0},
-	"settings": {"sfx_volume": 1.0, "music_volume": 1.0, "vibration": true},
+	"settings": {},
+	"stats": {
+		"best_time": 0.0,
+		"best_kills": 0,
+		"total_runs": 0,
+		"total_gold_earned": 0,
+	},
+	"unlocked": [],
 }
 
-
 func _ready() -> void:
-	load_data()
+	_load()
 
+func _load() -> void:
+	if FileAccess.file_exists(SAVE_PATH):
+		var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+		var json := JSON.new()
+		var err := json.parse(file.get_as_text())
+		if err == OK and json.data is Dictionary:
+			var loaded: Dictionary = json.data
+			# Merge loaded data into defaults to handle new fields
+			for key in loaded:
+				_data[key] = loaded[key]
+			# Ensure stats sub-dict has all keys
+			if not _data.has("stats") or not _data["stats"] is Dictionary:
+				_data["stats"] = {"best_time": 0.0, "best_kills": 0, "total_runs": 0, "total_gold_earned": 0}
 
-func load_data() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
-		data = DEFAULT_DATA.duplicate(true)
-		save_data()
-		return
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var json_text := file.get_as_text()
-	file.close()
-	var parsed = JSON.parse_string(json_text)
-	if parsed is Dictionary:
-		data = parsed
-		# Merge defaults for any missing keys (forward compatibility)
-		for key in DEFAULT_DATA:
-			if not data.has(key):
-				data[key] = DEFAULT_DATA[key]
-	else:
-		data = DEFAULT_DATA.duplicate(true)
-
-
-func save_data() -> void:
+func _save() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	file.store_string(JSON.stringify(data, "\t"))
-	file.close()
-
+	file.store_string(JSON.stringify(_data, "\t"))
 
 # ─── GOLD ─────────────────────────────────────────────────
 func get_gold() -> int:
-	return data.get("gold", 0)
-
+	return int(_data.get("gold", 0))
 
 func add_gold(amount: int) -> void:
-	data["gold"] = get_gold() + amount
-	save_data()
-
+	_data["gold"] = get_gold() + amount
+	if _data.has("stats"):
+		_data["stats"]["total_gold_earned"] = _data["stats"].get("total_gold_earned", 0) + amount
+	_save()
 
 func spend_gold(amount: int) -> bool:
-	if get_gold() < amount:
-		return false
-	data["gold"] -= amount
-	save_data()
-	return true
+	if get_gold() >= amount:
+		_data["gold"] = get_gold() - amount
+		_save()
+		return true
+	return false
 
-
-# ─── GEMS ─────────────────────────────────────────────────
-func get_gems() -> int:
-	return data.get("gems", 0)
-
-
-func add_gems(amount: int) -> void:
-	data["gems"] = get_gems() + amount
-	save_data()
-
-
-func spend_gems(amount: int) -> bool:
-	if get_gems() < amount:
-		return false
-	data["gems"] -= amount
-	save_data()
-	return true
-
-
-# ─── META-UPGRADES ────────────────────────────────────────
+# ─── META UPGRADES ────────────────────────────────────────
 func get_meta_level(upgrade_id: String) -> int:
-	return data["meta_upgrades"].get(upgrade_id, 0)
-
+	var metas: Dictionary = _data.get("meta_upgrades", {})
+	return int(metas.get(upgrade_id, 0))
 
 func set_meta_level(upgrade_id: String, level: int) -> void:
-	data["meta_upgrades"][upgrade_id] = level
-	save_data()
+	if not _data.has("meta_upgrades"):
+		_data["meta_upgrades"] = {}
+	_data["meta_upgrades"][upgrade_id] = level
+	_save()
 
-
-func upgrade_meta(upgrade_id: String) -> void:
-	var current := get_meta_level(upgrade_id)
-	data["meta_upgrades"][upgrade_id] = current + 1
-	save_data()
-
-
-# ─── CHARACTERS ───────────────────────────────────────────
-func is_character_unlocked(id: String) -> bool:
-	return id in data.get("unlocked_characters", ["leuco"])
-
-
-func unlock_character(id: String) -> void:
-	if not is_character_unlocked(id):
-		data["unlocked_characters"].append(id)
-		save_data()
-
-
-func get_selected_character() -> String:
-	return data.get("selected_character", "leuco")
-
-
-func set_selected_character(id: String) -> void:
-	data["selected_character"] = id
-	save_data()
-
-
-# ─── BEST STATS ───────────────────────────────────────────
-func update_best_stats(time: float, kills: int) -> void:
-	if time > data.get("best_time", 0.0):
-		data["best_time"] = time
-	if kills > data.get("best_kills", 0):
-		data["best_kills"] = kills
-	data["total_runs"] = data.get("total_runs", 0) + 1
-	save_data()
-
+func buy_meta_upgrade(upgrade_id: String, cost: int) -> bool:
+	if spend_gold(cost):
+		set_meta_level(upgrade_id, get_meta_level(upgrade_id) + 1)
+		return true
+	return false
 
 # ─── SETTINGS ─────────────────────────────────────────────
-func get_setting(key: String, default_value = null):
-	return data["settings"].get(key, default_value)
-
+func get_setting(key: String, default_val = null) -> Variant:
+	var settings: Dictionary = _data.get("settings", {})
+	return settings.get(key, default_val)
 
 func set_setting(key: String, value) -> void:
-	data["settings"][key] = value
-	save_data()
+	if not _data.has("settings"):
+		_data["settings"] = {}
+	_data["settings"][key] = value
+	_save()
+
+# ─── STATS ────────────────────────────────────────────────
+func update_best_stats(run_time: float, kills: int) -> void:
+	if not _data.has("stats"):
+		_data["stats"] = {}
+	if run_time > _data["stats"].get("best_time", 0.0):
+		_data["stats"]["best_time"] = run_time
+	if kills > _data["stats"].get("best_kills", 0):
+		_data["stats"]["best_kills"] = kills
+	_data["stats"]["total_runs"] = _data["stats"].get("total_runs", 0) + 1
+	_save()
+
+# ─── UNLOCKED ─────────────────────────────────────────────
+func is_unlocked(item_id: String) -> bool:
+	return item_id in _data.get("unlocked", [])
+
+func unlock(item_id: String) -> void:
+	if not _data.has("unlocked"):
+		_data["unlocked"] = []
+	if item_id not in _data["unlocked"]:
+		_data["unlocked"].append(item_id)
+		_save()

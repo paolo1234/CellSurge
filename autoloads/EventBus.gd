@@ -20,6 +20,7 @@ signal enemy_died(enemy_type: String, position: Vector2)
 signal enemy_spawned(enemy_type: String)
 signal boss_spawned(boss_id: String)
 signal boss_died(boss_id: String)
+signal boss_hp_changed(current_hp: float, max_hp: float)
 
 # ─── UPGRADE ──────────────────────────────────────────────
 signal upgrade_selected(upgrade_id: String)
@@ -31,7 +32,12 @@ signal run_ended(stats: Dictionary)
 signal game_paused
 signal game_resumed
 signal wave_changed(minute: int)
+signal wave_announcement(text: String, color: Color)
+signal victory
 
 # ─── UI ───────────────────────────────────────────────────
 signal show_floating_text(text: String, position: Vector2, color: Color)
 signal screen_shake_requested(intensity: float, duration: float)
+signal pause_requested
+signal resume_requested
+signal return_to_menu

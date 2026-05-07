@@ -23,6 +23,14 @@ const GOLD_PER_MINUTE: int = 10
 const GOLD_PER_LEVEL: int = 5
 const GOLD_BASE: int = 50
 
+# ─── PROGRESS ─────────────────────────────────────────────
+## Returns 0.0 → 1.0 progress toward 20 min victory
+var run_progress: float:
+	get:
+		if RUN_DURATION <= 0.0:
+			return 1.0
+		return clampf(run_time / RUN_DURATION, 0.0, 1.0)
+
 
 func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
@@ -34,6 +42,13 @@ func _process(delta: float) -> void:
 	if not run_active:
 		return
 	run_time += delta
+	_check_victory()
+
+# Debug helper to add gold instantly (used by PauseScreen debug UI)
+func add_gold_debug(amount: int) -> void:
+	gold_earned_this_run += amount
+	# No dedicated signal for gold changes; UI reads the value when needed
+
 
 
 func start_run() -> void:
@@ -49,6 +64,8 @@ func start_run() -> void:
 
 
 func end_run(victory: bool = false) -> void:
+	if not run_active:
+		return
 	run_active = false
 	var gold = _calculate_gold(victory)
 	gold_earned_this_run = gold
@@ -67,8 +84,13 @@ func end_run(victory: bool = false) -> void:
 func add_exp(amount: float) -> void:
 	if not run_active:
 		return
-	current_exp += amount
-	EventBus.player_exp_gained.emit(amount, current_exp, exp_to_next_level)
+	var actual_amount := amount
+	# Apply exp gain multiplier from player stats
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.stats:
+		actual_amount *= player.stats.exp_gain_mult
+	current_exp += actual_amount
+	EventBus.player_exp_gained.emit(actual_amount, current_exp, exp_to_next_level)
 	while current_exp >= exp_to_next_level:
 		current_exp -= exp_to_next_level
 		current_level += 1
@@ -86,12 +108,25 @@ func get_run_time_string() -> String:
 	return "%02d:%02d" % [minutes, seconds]
 
 
+func get_remaining_time_string() -> String:
+	var remaining := maxf(RUN_DURATION - run_time, 0.0)
+	var minutes := int(remaining) / 60
+	var seconds := int(remaining) % 60
+	return "%02d:%02d" % [minutes, seconds]
+
+
+func _check_victory() -> void:
+	if run_time >= RUN_DURATION:
+		end_run(true)
+
+
 func _calculate_gold(victory: bool) -> int:
 	var gold := GOLD_BASE
 	gold += int(run_time / 60.0) * GOLD_PER_MINUTE
 	gold += current_level * GOLD_PER_LEVEL
+	gold += kill_count * GOLD_PER_KILL
 	if victory:
-		gold += 100
+		gold += 200  # Bonus vittoria
 	return gold
 
 
@@ -101,7 +136,6 @@ func _on_player_died() -> void:
 
 func _on_enemy_died(_type: String, _pos: Vector2) -> void:
 	kill_count += 1
-	gold_earned_this_run += GOLD_PER_KILL
 
 
 func _on_exp_gained(_amount: float, _total: float, _needed: float) -> void:

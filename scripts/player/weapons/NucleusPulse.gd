@@ -13,12 +13,13 @@ func _ready() -> void:
 	weapon_id = "nucleus_pulse"
 	base_damage = 15.0
 	base_fire_rate = 0.8
-	var level_ups = [
-	{"damage": 1.2, "projectile_count": 1},
-	{"damage": 1.4, "fire_rate": 1.1},
-	{"damage": 1.6, "projectile_count": 2, "area": 1.2},
-	{"damage": 2.0, "fire_rate": 1.2, "projectile_count": 2},
-]
+	# Assign level_ups to the class property (was missing!)
+	level_ups = [
+		{"damage": 1.2, "projectile_count": 1},
+		{"damage": 1.4, "fire_rate": 1.1},
+		{"damage": 1.6, "projectile_count": 2, "area": 1.2},
+		{"damage": 2.0, "fire_rate": 1.2, "projectile_count": 2},
+	]
 	super._ready()
 	if projectile_scene == null:
 		projectile_scene = load("res://scenes/gameplay/Projectile.tscn")
@@ -33,6 +34,7 @@ func _fire() -> void:
 		var angle := angle_step * i
 		var direction := Vector2.from_angle(angle)
 		_spawn_projectile(direction)
+	AudioManager.play_shoot()
 
 
 func _get_projectile_count() -> int:

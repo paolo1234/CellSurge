@@ -212,25 +212,45 @@ func _on_play_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/gameplay/World.tscn")
 
 func _on_settings_pressed() -> void:
-	visible = false
+	_hide_menu_elements()
 	var settings := preload("res://scripts/ui/SettingsMenu.gd").new()
+	settings.set_anchors_preset(Control.PRESET_FULL_RECT)
 	settings.back_pressed.connect(_on_menu_closed)
 	get_tree().root.add_child(settings)
 
 
 func _on_store_pressed() -> void:
-	visible = false
+	_hide_menu_elements()
 	var upgrades := preload("res://scripts/ui/UpgradesMenu.gd").new()
+	upgrades.set_anchors_preset(Control.PRESET_FULL_RECT)
 	upgrades.back_pressed.connect(_on_menu_closed)
 	get_tree().root.add_child(upgrades)
 
 
 func _on_profile_pressed() -> void:
-	visible = false
+	_hide_menu_elements()
 	var profile := preload("res://scripts/ui/ProfileMenu.gd").new()
+	profile.set_anchors_preset(Control.PRESET_FULL_RECT)
 	profile.back_pressed.connect(_on_menu_closed)
 	get_tree().root.add_child(profile)
 
 
 func _on_menu_closed() -> void:
-	visible = true
+	for child in get_tree().root.get_children():
+		if child.has_method("back_pressed"):
+			child.queue_free()
+	_show_menu_elements()
+
+func _hide_menu_elements() -> void:
+	title_label.visible = false
+	store_btn.visible = false
+	play_btn.visible = false
+	bottom_panel.visible = false
+	gold_label.visible = false
+
+func _show_menu_elements() -> void:
+	title_label.visible = true
+	store_btn.visible = true
+	play_btn.visible = true
+	bottom_panel.visible = true
+	gold_label.visible = true
