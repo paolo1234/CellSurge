@@ -18,9 +18,10 @@ var exp_to_next_level: float = 20.0
 const BASE_EXP: float = 20.0
 const EXP_GROWTH: float = 10.0        # added per level
 const RUN_DURATION: float = 1200.0    # 20 minutes in seconds
+const GOLD_PER_KILL: int = 5
 const GOLD_PER_MINUTE: int = 10
 const GOLD_PER_LEVEL: int = 5
-const GOLD_BASE: int = 100
+const GOLD_BASE: int = 50
 
 
 func _ready() -> void:
@@ -100,6 +101,7 @@ func _on_player_died() -> void:
 
 func _on_enemy_died(_type: String, _pos: Vector2) -> void:
 	kill_count += 1
+	gold_earned_this_run += GOLD_PER_KILL
 
 
 func _on_exp_gained(_amount: float, _total: float, _needed: float) -> void:

@@ -86,10 +86,10 @@ func _on_play_pressed() -> void:
 
 
 func _on_settings_pressed() -> void:
-	# TODO: Settings menu
-	pass
+	var settings := preload("res://scripts/ui/SettingsMenu.gd").new()
+	get_tree().root.add_child(settings)
 
 
 func _on_upgrades_pressed() -> void:
-	# TODO: Meta-upgrade menu
-	pass
+	var upgrades := preload("res://scripts/ui/UpgradesMenu.gd").new()
+	get_tree().root.add_child(upgrades)

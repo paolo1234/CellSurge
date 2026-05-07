@@ -95,10 +95,10 @@ func _build_ui() -> void:
 	gold_container.add_child(_gold_label)
 
 	var gold_sub := Label.new()
-	gold_sub.text = "  GOLD EARNED"
+	gold_sub.text = "GOLD EARNED (+5 per kill, +10 per min)"
 	gold_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	gold_sub.add_theme_font_size_override("font_size", 18)
-	gold_sub.modulate = Color(0.4, 0.45, 0.5)
+	gold_sub.add_theme_font_size_override("font_size", 14)
+	gold_sub.modulate = Color(0.35, 0.4, 0.45)
 	gold_container.add_child(gold_sub)
 
 	# Restart button
