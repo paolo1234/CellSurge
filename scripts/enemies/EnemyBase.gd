@@ -95,9 +95,39 @@ func take_damage(amount: float) -> void:
 
 func _die() -> void:
 	remove_from_group("enemies")
+	_spawn_death_effect()
 	EventBus.enemy_died.emit(enemy_type, global_position)
 	_drop_exp()
 	call_deferred("queue_free")
+
+
+func _spawn_death_effect() -> void:
+	for i in 6:
+		var particle = ColorRect.new()
+		particle.color = _get_enemy_color()
+		particle.custom_minimum_size = Vector2(randf_range(4, 10), randf_range(4, 10))
+		particle.global_position = global_position
+		get_tree().root.add_child(particle)
+		
+		var dir = Vector2.from_angle(randf() * TAU)
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(particle, "global_position", global_position + dir * randf_range(30, 80), 0.3)
+		tween.tween_property(particle, "modulate:a", 0.0, 0.3)
+		tween.tween_property(particle, "size", Vector2.ZERO, 0.3)
+		await tween.finished
+		particle.queue_free()
+
+
+func _get_enemy_color() -> Color:
+	match enemy_type:
+		"batterio": return Color(0.9, 0.2, 0.2)
+		"virus": return Color(0.3, 0.9, 0.3)
+		"fungo": return Color(0.7, 0.3, 0.8)
+		"leech": return Color(0.8, 0.2, 0.5)
+		"ranged_cell": return Color(1.0, 0.5, 0.0)
+		"splitter": return Color(0.9, 0.9, 0.3)
+		_: return Color(0.8, 0.8, 0.8)
 
 
 func _drop_exp() -> void:
