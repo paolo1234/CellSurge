@@ -7,7 +7,7 @@ extends WeaponBase
 @export var spike_speed: float = 400.0
 @export var spike_pierce: int = 1
 
-const level_ups_template := [
+const level_ups_template = [
 	{"damage": 1.5, "fire_rate": 1.2, "area": 1.2},
 	{"damage": 2.0, "fire_rate": 1.4, "area": 1.4},
 	{"damage": 2.5, "fire_rate": 1.6, "area": 1.6},

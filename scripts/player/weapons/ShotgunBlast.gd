@@ -6,7 +6,7 @@ extends WeaponBase
 @export var pellets: int = 5
 @export var spread_angle: float = 0.5  # radians
 
-const level_ups_template := [
+const level_ups_template = [
 	{"damage": 1.4, "fire_rate": 1.3},
 	{"damage": 1.7, "fire_rate": 1.4},
 	{"damage": 2.0, "fire_rate": 1.5},

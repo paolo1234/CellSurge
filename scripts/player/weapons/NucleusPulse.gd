@@ -13,12 +13,12 @@ func _ready() -> void:
 	weapon_id = "nucleus_pulse"
 	base_damage = 15.0
 	base_fire_rate = 0.8
-	level_ups = [
-		{"damage": 1.2, "projectile_count": 1},
-		{"damage": 1.4, "fire_rate": 1.1},
-		{"damage": 1.6, "projectile_count": 2, "area": 1.2},
-		{"damage": 2.0, "fire_rate": 1.2, "projectile_count": 2},
-	]
+	var level_ups = [
+	{"damage": 1.2, "projectile_count": 1},
+	{"damage": 1.4, "fire_rate": 1.1},
+	{"damage": 1.6, "projectile_count": 2, "area": 1.2},
+	{"damage": 2.0, "fire_rate": 1.2, "projectile_count": 2},
+]
 	super._ready()
 	if projectile_scene == null:
 		projectile_scene = load("res://scenes/gameplay/Projectile.tscn")

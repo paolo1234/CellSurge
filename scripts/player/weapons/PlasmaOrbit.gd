@@ -7,7 +7,7 @@ var _orbs: Array = []
 var _orbit_radius: float = 80.0
 var _orbit_speed: float = 2.0
 
-const level_ups_template := [
+const level_ups_template = [
 	{"damage": 1.3, "area": 1.3, "fire_rate": 1.2},
 	{"damage": 1.5, "area": 1.5, "fire_rate": 1.3},
 	{"damage": 1.7, "area": 1.7, "fire_rate": 1.4},

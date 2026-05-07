@@ -10,7 +10,7 @@ extends Node2D
 @export var base_fire_rate: float = 1.0      # attacks per second
 @export var base_area: float = 1.0
 @export var max_level: int = 5
-@export var level_ups: Array[Dictionary] = []
+@export var level_ups: Array = []
 
 # ─── STATE ────────────────────────────────────────────────
 var level: int = 1
