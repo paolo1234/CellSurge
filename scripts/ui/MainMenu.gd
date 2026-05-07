@@ -52,6 +52,8 @@ func _setup_layout_spacings() -> void:
 func _connect_buttons() -> void:
 	if play_btn: play_btn.pressed.connect(_on_play_pressed)
 	if settings_btn: settings_btn.pressed.connect(_on_settings_pressed)
+	if store_btn: store_btn.pressed.connect(_on_store_pressed)
+	if profile_btn: profile_btn.pressed.connect(_on_profile_pressed)
 	
 	# Usiamo un ciclo per applicare l'animazione touch (squish) a tutti i bottoni
 	for btn in [play_btn, settings_btn, store_btn, profile_btn, records_btn]:
@@ -214,6 +216,21 @@ func _on_settings_pressed() -> void:
 	var settings := preload("res://scripts/ui/SettingsMenu.gd").new()
 	settings.back_pressed.connect(_on_menu_closed)
 	get_tree().root.add_child(settings)
+
+
+func _on_store_pressed() -> void:
+	visible = false
+	var upgrades := preload("res://scripts/ui/UpgradesMenu.gd").new()
+	upgrades.back_pressed.connect(_on_menu_closed)
+	get_tree().root.add_child(upgrades)
+
+
+func _on_profile_pressed() -> void:
+	visible = false
+	var profile := preload("res://scripts/ui/ProfileMenu.gd").new()
+	profile.back_pressed.connect(_on_menu_closed)
+	get_tree().root.add_child(profile)
+
 
 func _on_menu_closed() -> void:
 	visible = true
