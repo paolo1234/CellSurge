@@ -20,9 +20,15 @@ var _gold_label: Label
 func _ready() -> void:
 	hide()
 	_build_ui()
+	visibility_changed.connect(_on_visibility_changed)
+
+func _on_visibility_changed() -> void:
+	if not visible:
+		_show_joysticks()
 
 
 func _build_ui() -> void:
+	layer = 200
 	# Dark overlay
 	var overlay := ColorRect.new()
 	overlay.color = Color(0.01, 0.01, 0.03, 0.92)
@@ -166,6 +172,7 @@ func setup(stats: Dictionary) -> void:
 		_gold_label.text = "+%d" % stats.get("gold", 0)
 
 	show()
+	_hide_joysticks()
 	get_tree().paused = true
 
 
@@ -173,3 +180,10 @@ func _on_restart_pressed() -> void:
 	hide()
 	get_tree().paused = false
 	get_tree().reload_current_scene()
+
+
+func _hide_joysticks() -> void:
+	get_tree().call_group("joysticks", "hide")
+
+func _show_joysticks() -> void:
+	get_tree().call_group("joysticks", "show")
