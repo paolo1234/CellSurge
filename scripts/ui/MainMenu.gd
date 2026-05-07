@@ -219,7 +219,6 @@ func _on_settings_pressed() -> void:
 
 
 func _on_store_pressed() -> void:
-	print("STORE BUTTON CLICKED!")
 	visible = false
 	var upgrades := preload("res://scripts/ui/UpgradesMenu.gd").new()
 	upgrades.back_pressed.connect(_on_menu_closed)
@@ -227,7 +226,6 @@ func _on_store_pressed() -> void:
 
 
 func _on_profile_pressed() -> void:
-	print("PROFILE BUTTON CLICKED!")
 	visible = false
 	var profile := preload("res://scripts/ui/ProfileMenu.gd").new()
 	profile.back_pressed.connect(_on_menu_closed)

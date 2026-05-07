@@ -25,11 +25,13 @@ anchor_right = 1.0
 offset_top = 20.0
 offset_bottom = 100.0
 grow_horizontal = 2
+mouse_filter = 1
 theme_override_constants/separation = 20
 
 [node name="StoreButton" type="Button" parent="TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 text = "🛒 NEGOZIO"
 
 [node name="Spacer" type="Control" parent="TopBar"]
