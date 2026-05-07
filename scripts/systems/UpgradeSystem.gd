@@ -51,14 +51,14 @@ func setup(player: CharacterBody2D) -> void:
 	_stacks.clear()
 
 
-func get_choices(count: int = 3) -> Array[Dictionary]:
-	var available := _get_available_upgrades()
+func get_choices(count: int = 3) -> Array:
+	var available = _get_available_upgrades()
 	print("Available upgrades: ", available.size())
 	if available.is_empty():
 		return []
 	available.shuffle()
-	var weighted := _apply_luck_to_pool(available)
-	var choices: Array[Dictionary] = []
+	var weighted = _apply_luck_to_pool(available)
+	var choices: Array = []
 	for up in weighted:
 		if choices.size() >= count:
 			break
@@ -99,22 +99,30 @@ func apply_upgrade(upgrade_id: String) -> void:
 	# Do NOT re-emit here to avoid infinite signal loop.
 
 
-func _get_available_upgrades() -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
+func _get_available_upgrades() -> Array:
+	var result: Array = []
 	for id in UPGRADES:
-		var data: Dictionary = UPGRADES[id]
+		var data = UPGRADES[id]
 		var stack: int = _stacks.get(id, 0)
 		if stack < int(data.get("max_stack", 1)):
 			result.append({"id": id, "data": data})
 	return result
 
 
-func _apply_luck_to_pool(pool: Array) -> Array[Dictionary]:
+func _apply_luck_to_pool(pool: Array) -> Array:
 	var luck_stat: float = _player.stats.luck if _player else 0.0
-	var common := pool.filter(func(u): return u["data"]["rarity"] == "common")
-	var rare := pool.filter(func(u): return u["data"]["rarity"] == "rare")
-	var epic := pool.filter(func(u): return u["data"]["rarity"] == "epic")
-	var weighted: Array[Dictionary] = []
+	var common = []
+	var rare = []
+	var epic = []
+	for u in pool:
+		var rarity = u["data"]["rarity"]
+		if rarity == "common":
+			common.append(u)
+		elif rarity == "rare":
+			rare.append(u)
+		elif rarity == "epic":
+			epic.append(u)
+	var weighted: Array = []
 	if not epic.is_empty() and randf() < 0.05 + luck_stat * 0.2:
 		weighted.append_array(epic)
 	weighted.append_array(rare)
