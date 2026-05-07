@@ -12,7 +12,7 @@ const COLOR_RARE := Color(0.3, 0.5, 1.0)
 const COLOR_EPIC := Color(0.6, 0.3, 0.9)
 
 var _choice_buttons: Array = []
-var _choices: Array[Dictionary] = []
+var _choices: Array = []
 
 
 func _ready() -> void:
@@ -94,7 +94,7 @@ func _create_card(_index: int) -> Button:
 	return card
 
 
-func show_choices(choices: Array[Dictionary], _level: int) -> void:
+func show_choices(choices: Array, _level: int) -> void:
 	_choices = choices
 	_hide_joysticks()
 
