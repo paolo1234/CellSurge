@@ -83,17 +83,43 @@ func _setup_hp_ring() -> void:
 
 
 func _create_background() -> void:
-	var bg = Sprite2D.new()
-	bg.name = "Background"
-	bg.position = Vector2(540, 480)
-	bg.scale = Vector2(0.65, 0.65)
+	# Full-screen background
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.01, 0.03, 0.08, 1)  # Dark blue ocean background
+	bg.z_index = -200
+	add_child(bg)
+	
+	# Ocean decorations (floating particles)
+	for i in 30:
+		var bubble = ColorRect.new()
+		bubble.color = Color(0.3, 0.6, 0.8, 0.15)
+		bubble.custom_minimum_size = Vector2(randf_range(2, 8), randf_range(2, 8))
+		bubble.position = Vector2(randf_range(0, 1080), randf_range(0, 1920))
+		bubble.z_index = -150
+		add_child(bubble)
+		
+		# Animate bubbles rising
+		var tween = create_tween()
+		tween.set_loops()
+		tween.tween_property(bubble, "position:y", bubble.position.y - randf_range(100, 300), randf_range(3, 6))
+		tween.tween_property(bubble, "modulate:a", 0.0, randf_range(3, 6))
+		# Reset position when reaching top
+		tween.tween_property(bubble, "position:y", bubble.position.y + randf_range(1200, 1400), 0)
+
+
+	# Underwater background image (tiled)
+	var bg_image = Sprite2D.new()
+	bg_image.name = "Background"
+	bg_image.position = Vector2(540, 480)
+	bg_image.scale = Vector2(1.5, 1.5)
 	var bg_texture = load("res://assets/backgrounds/background.png")
 	if bg_texture:
-		bg.texture = bg_texture
-		bg.modulate = Color(1, 1, 1, 0.25)
-		bg.z_index = -100
-		bg.y_sort_enabled = true
-		add_child(bg)
+		bg_image.texture = bg_texture
+		bg_image.modulate = Color(1, 1, 1, 0.2)
+		bg_image.z_index = -100
+		bg_image.y_sort_enabled = true
+		add_child(bg_image)
 		set_process(true)
 
 

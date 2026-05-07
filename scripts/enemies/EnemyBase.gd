@@ -104,21 +104,31 @@ func _die() -> void:
 
 
 func _spawn_death_effect() -> void:
-	for i in 6:
+	# Flying particles that spread out and fade
+	for i in 8:
 		var particle = ColorRect.new()
 		particle.color = _get_enemy_color()
-		particle.custom_minimum_size = Vector2(randf_range(4, 10), randf_range(4, 10))
+		particle.custom_minimum_size = Vector2(randf_range(6, 14), randf_range(6, 14))
 		particle.global_position = global_position
 		get_tree().root.add_child(particle)
 		
-		var dir = Vector2.from_angle(randf() * TAU)
+		var angle = randf() * TAU
+		var speed = randf_range(100, 250)
+		var lifetime = randf_range(0.4, 0.8)
+		
 		var tween = create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(particle, "global_position", global_position + dir * randf_range(30, 80), 0.3)
-		tween.tween_property(particle, "modulate:a", 0.0, 0.3)
-		tween.tween_property(particle, "size", Vector2.ZERO, 0.3)
-		await tween.finished
-		particle.queue_free()
+		# Fly outward in random direction
+		tween.tween_property(particle, "global_position", global_position + Vector2.from_angle(angle) * randf_range(40, 100), lifetime)
+		# Fade out
+		tween.tween_property(particle, "modulate:a", 0.0, lifetime)
+		# Shrink
+		tween.tween_property(particle, "custom_minimum_size", Vector2.ZERO, lifetime)
+		# Rotate while flying
+		tween.tween_property(particle, "rotation", randf_range(-3, 3), lifetime)
+		
+		# Delete after animation
+		get_tree().create_timer(lifetime).timeout.connect(particle.queue_free)
 
 
 func _get_enemy_color() -> Color:

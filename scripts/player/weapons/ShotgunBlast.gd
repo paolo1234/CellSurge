@@ -41,7 +41,6 @@ func _spawn_pellet(angle: float) -> void:
 	proj.global_position = player.global_position
 	var dir = Vector2.from_angle(angle)
 	proj.setup(dir, _get_damage(), _get_area() * 0.5, 1, null)
-	proj.lifetime = 0.5  # Short range
-	proj.speed *= 1.5  # Faster
+	proj.modulate = Color(1, 0.8, 0.2)  # Yellow shotgun pellets
 	get_tree().root.add_child(proj)
 	EventBus.weapon_evolved.emit(weapon_id, level)
