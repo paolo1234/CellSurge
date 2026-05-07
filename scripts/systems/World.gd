@@ -107,6 +107,7 @@ func _instantiate_ui() -> void:
 	joystick.process_mode = Node.PROCESS_MODE_ALWAYS
 	# Set area to bottom half of screen
 	joystick.dynamic_area_top_margin = 0.5
+	joystick.add_to_group("joysticks")
 	joystick_canvas.add_child(joystick)
 
 

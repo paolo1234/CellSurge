@@ -18,10 +18,16 @@ var _choices: Array[Dictionary] = []
 func _ready() -> void:
 	_build_ui()
 	visible = false
+	visibility_changed.connect(_on_visibility_changed)
+
+func _on_visibility_changed() -> void:
+	if not visible:
+		_show_joysticks()
 
 
 func _build_ui() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	layer = 200
 
 	var overlay := ColorRect.new()
 	overlay.color = COLOR_BG
@@ -90,6 +96,7 @@ func _create_card(_index: int) -> Button:
 
 func show_choices(choices: Array[Dictionary], _level: int) -> void:
 	_choices = choices
+	_hide_joysticks()
 
 	if choices.is_empty():
 		return
@@ -150,6 +157,13 @@ func show_choices(choices: Array[Dictionary], _level: int) -> void:
 
 	visible = true
 	get_tree().paused = true
+
+
+func _hide_joysticks() -> void:
+	get_tree().call_group("joysticks", "hide")
+
+func _show_joysticks() -> void:
+	get_tree().call_group("joysticks", "show")
 
 
 func _get_rarity_color(rarity: String) -> Color:
