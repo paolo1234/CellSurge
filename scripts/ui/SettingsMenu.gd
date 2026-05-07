@@ -26,17 +26,21 @@ func _input(event: InputEvent) -> void:
 
 func _build_ui() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	var bg := ColorRect.new()
-	bg.color = Color(0.01, 0.01, 0.03, 0.98)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.01, 0.01, 0.03, 0.98)
 	add_child(bg)
 
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
 	var main_vbox := VBoxContainer.new()
-	main_vbox.set_anchors_preset(Control.PRESET_CENTER)
+	main_vbox.custom_minimum_size = Vector2(500, 450)
 	main_vbox.add_theme_constant_override("separation", 30)
-	main_vbox.custom_minimum_size = Vector2(500, 500)
-	add_child(main_vbox)
+	center.add_child(main_vbox)
 
 	var title := Label.new()
 	title.text = "⚙️ SETTINGS"

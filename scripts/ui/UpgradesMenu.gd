@@ -38,16 +38,21 @@ func _input(event: InputEvent) -> void:
 
 func _build_ui() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	var bg := ColorRect.new()
-	bg.color = Color(0.01, 0.01, 0.03, 0.98)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.01, 0.01, 0.03, 0.98)
 	add_child(bg)
 
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
 	var main_vbox := VBoxContainer.new()
-	main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	main_vbox.add_theme_constant_override("separation", 20)
-	add_child(main_vbox)
+	main_vbox.custom_minimum_size = Vector2(800, 600)
+	main_vbox.add_theme_constant_override("separation", 24)
+	center.add_child(main_vbox)
 
 	var header := HBoxContainer.new()
 	header.custom_minimum_size = Vector2(0, 80)
@@ -117,12 +122,12 @@ func _create_upgrade_card(upg: Dictionary) -> Control:
 	icon.add_theme_font_size_override("font_size", 36)
 	card.add_child(icon)
 
-	var name := Label.new()
-	name.text = upg["name"]
-	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name.add_theme_font_size_override("font_size", 18)
-	name.modulate = COLOR_WHITE
-	card.add_child(name)
+	var name_lbl := Label.new()
+	name_lbl.text = upg["name"]
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.add_theme_font_size_override("font_size", 18)
+	name_lbl.modulate = COLOR_WHITE
+	card.add_child(name_lbl)
 
 	var desc := Label.new()
 	desc.text = upg["desc"]
